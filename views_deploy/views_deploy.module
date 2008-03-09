@@ -1,0 +1,85 @@
+<?php
+//$Id$
+
+/**
+ * implementation of hook menu
+ */
+function views_deploy_menu() {
+  $items = array();
+
+  $items[] = array(
+    'path' => 'admin/build/views/deploy', 
+    'title' => t('Deploy'),
+    'description' => t('Add a view to a deployment plan.'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('views_deploy_add_form'),
+    'access' => user_access('add items to deployment plan'),
+    'type' => MENU_LOCAL_TASK
+  );
+  
+  return $items;
+}
+
+/**
+ * deploy view form
+ */
+function views_deploy_add_form() {
+  $plans = deploy_get_plans();
+  if (empty($plans)) {
+    return "No deployment plans available";
+  }
+
+  $views = array();
+  $result = db_query("SELECT name FROM {view_view} ORDER BY name");
+  while ($view = db_fetch_array($result)) {
+    $views[$view['name']] = $view['name'];
+  }
+  
+  $form['pid'] = array(
+    '#title' => t('Deployment Plan'),
+    '#type' => 'select',
+    '#options' => $plans,
+    '#description' => t('The deployment plan to add this view to'),
+  );
+  $form['view_name'] = array(
+    '#title' => t('View'),
+    '#type' => 'select',
+    '#options' => $views,
+    '#description' => t('The view to deploy'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  return $form;
+}
+
+/**
+ * deploy view form submit callback
+ */
+function views_deploy_add_form_submit($form_id, $form_values) {
+  $pid = $form_values['pid'];
+  $view_name = $form_values['view_name'];
+  $module = 'views';
+  $description = "View: $view_name";
+
+  deploy_add_to_plan($pid, $module, $description, $view_name);
+
+  return "admin/deploy/list/$pid";
+}
+
+/**
+ * deploy view deployment 'hook'
+ */
+function views_deploy($url, $api_key, $view_name) {
+  $view = views_get_view($view_name);
+  if ($view == null) {
+    drupal_set_message(t("View $view_name does not exist."));
+  }
+  
+  $export = views_create_view_code($view_name);
+
+  watchdog('deploymeny', $export);
+  
+  drupal_set_message(xmlrpc($url, 'views.importView', $api_key, $export));
+}

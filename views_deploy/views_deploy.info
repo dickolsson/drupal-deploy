@@ -1,0 +1,5 @@
+; $Id$
+name = "Deploy Views"
+description = "Deploy views using the Deployment framework"
+dependencies = deploy views
+package = Deployment
