@@ -20,8 +20,10 @@ have not, visit http://drupal.org/project/services and do that first.
 1) Extract the Deployment tarball into your modules directory
 
 2) Enable Services (under the Services group), XMLRPC Server (under Services - servers 
-group), Content Copy Service and/or System Settings Service depending on your need 
-(under the Services - services group). 
+group), Content Copy Service, Views Service and/or System Settings Service depending on your need 
+(under the Services - services group). (NOTE: if you wish to use Views Service, you
+will currently have to apply the patch at http://drupal.org/node/231243 to views_service.module
+in modules/services.)
 
 3) Surf to /admin/build/services/settings on your site. 
 
@@ -38,5 +40,5 @@ SOURCE SERVER
 
 2) Surf to /admin/build/modules on your site
 
-3) Enable the module Deployment (under the Deployment group) as well as Deploy System Settings 
-and/or Deploy Content Type depending on your needs.
+3) Enable the module Deployment (under the Deployment group) as well as Deploy System Settings, 
+Deploy Views, and/or Deploy Content Type depending on your needs.

@@ -46,6 +46,11 @@ server). Submit the form.
 implements system_settings_form (example: admin/settings/date-time). At the bottom 
 of the form you can choose a deployment plan. Choose one and submit the form. 
 
+3c) If you have enabled Views Deployment - Surf to /admin/buil/views. 
+Click the "Deploy" tab. Choose a deployment plan and export you want to 
+export. Submit the form. If the view in question already exists on the other
+server, it will be updated.
+
 4) Return to admin/deploy and click the name of your deployment plan. You should 
 see the items above listed. 
 
@@ -69,3 +74,6 @@ system settings may not transfer properly.
 - Content Copy has some bugs which prevent some content types from being imported 
 properly. These content types will also fail when being deployed. If you can Export 
 and then Import a content type, then it will work here too.
+
+- Views currently require this patch to views_service.module in Services - 
+http://drupal.org/node/231243
