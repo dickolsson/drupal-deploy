@@ -1,18 +1,18 @@
-BEFORE LAUNCH
--------------
-- edit servers callback
+HIGH PRIORITY (must be done before 1.0)
+---------------------------------------
 - deployment plan item weighting
-
-IMMEDIATELY AFTER
------------------
 - installation / implementation guide. FAQ
-- Logging / auditing (new table)
-- Confirmation of install (?)
+- Delete confirmations
 - Views
 - Blocks and other non ssf settings
-- Delete confirmations (can you do this without two callbacks, see content type delete)
-- doxygen
 - simpletests
-- move some code to includes?
+- doxygen
+- Logging / auditing (new table ?)
 - better error handling on services
+- figure out what to do with perms
+
+LOWER PRIORITY (can wait if need be)
+------------------------------------
+- Confirmation of install (?)
+- move some code to includes (plan_admin.inc / server_admin.inc)
 - better menu organization (so breadcrumb is better)

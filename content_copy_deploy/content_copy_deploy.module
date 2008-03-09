@@ -15,6 +15,7 @@ function content_copy_deploy_menu() {
     'title' => t('Deploy'),
     'description' => t('Add a content type to a deployment plan.'),
     'callback' => 'content_copy_deploy_add',
+    'access' => user_access('add items to deployment plan'),
     'type' => MENU_LOCAL_TASK
   );
   

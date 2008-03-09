@@ -5,6 +5,9 @@
  * Add deployment fields to all system settings forms.
  */
 function system_settings_deploy_form_alter($form_id, &$form) {
+  if (!user_access('add items to deployment plan')) {
+    return;
+  }
 
   // Shift system_settings_form buttons.
   if (isset($form['#base']) && $form['#base'] == 'system_settings_form') {

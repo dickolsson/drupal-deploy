@@ -56,10 +56,6 @@ function content_copy_service_service() {
  * Content copy import service callback
  */
 function content_copy_service_import($type_name, $export) {
-  if (!module_exists('content_copy')) {
-    return services_error("Content Copy Import: content_copy module not installed");
-  }
-
   if ($type_name == 'create') {
     $type_name = '<create>';
   }
@@ -76,10 +72,6 @@ function content_copy_service_import($type_name, $export) {
  * Content copy export service callback
  */
 function content_copy_service_export($type_name) {
-  if (!module_exists('content_copy')) {
-    return services_error("Content Copy Export: content_copy module not installed");
-  }
-  
   if (!array_key_exists($type_name, node_get_types())) {
     return services_error("Content Copy Export: content type $type_name does not exist");
   }

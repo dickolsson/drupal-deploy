@@ -5,20 +5,38 @@ This framework requires two servers
 - a source server (which you will be deploying from)
 - a destination server (which you will be deploying to)
 
-It is theoretically possible to have one server act as both source and destination (for instance localhost), however some things may not work properly. For instance, at the moment the content type deployment automatically attempts to create any imported content type. When you deploy from one server back to itself, this will always fail because the content type already exists. Still this can be useful for testing in some cases.
+It is theoretically possible to have one server act as both source and destination 
+(for instance localhost), however some things may not work properly. For instance, 
+at the moment the content type deployment automatically attempts to create any 
+imported content type. When you deploy from one server back to itself, this will 
+always fail because the content type already exists. Still this can be useful for testing 
+in some cases.
 
 DESTINATION SERVER
 ------------------
-NOTE: These instructions assume you have already installed the Services module. If you have not, visit http://drupal.org/project/services and do that first.
+NOTE: These instructions assume you have already installed the Services module. If you 
+have not, visit http://drupal.org/project/services and do that first.
 
 1) Extract the Deployment tarball into your modules directory
-2) Enable Services (under the Services group), XMLRPC Server (under Services - servers group), Content Copy Service and/or System Settings Service depending on your need (under the Services - services group). 
+
+2) Enable Services (under the Services group), XMLRPC Server (under Services - servers 
+group), Content Copy Service and/or System Settings Service depending on your need 
+(under the Services - services group). 
+
 3) Surf to /admin/build/services/settings on your site. 
-4) In the Security area, Verify that "Use Keys" is checked, and "Use Sessid" is unchecked (the deployment framework does not currently support using sessions with services).
-5) If you do not already have an API Key generated for this server, surf to admin/build/services/keys/add and create one. You may use strict domain checking if you like but it is not required.
+
+4) In the Security area, Verify that "Use Keys" is checked, and "Use Sessid" is unchecked 
+(the deployment framework does not currently support using sessions with services).
+
+5) If you do not already have an API Key generated for this server, surf to 
+admin/build/services/keys/add and create one. You may use strict domain checking if you 
+like but it is not required.
 
 SOURCE SERVER
 -------------
 1) Extract the tarball into your modules directory
+
 2) Surf to /admin/build/modules on your site
-3) Enable the module Deployment (under the Deployment group) as well as Deploy System Settings and/or Deploy Content Type depending on your needs.
+
+3) Enable the module Deployment (under the Deployment group) as well as Deploy System Settings 
+and/or Deploy Content Type depending on your needs.
