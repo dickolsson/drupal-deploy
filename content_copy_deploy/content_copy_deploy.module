@@ -9,31 +9,21 @@ include_once ('./'. drupal_get_path('module', 'content') .'/content_admin.inc');
  */
 function content_copy_deploy_menu() {
   $items = array();
+  $plans = deploy_get_plans();
 
-  $items[] = array(
-    'path' => 'admin/content/types/deploy', 
-    'title' => t('Deploy'),
-    'description' => t('Add a content type to a deployment plan.'),
-    'callback' => 'content_copy_deploy_add',
-    'access' => user_access('add items to deployment plan'),
-    'type' => MENU_LOCAL_TASK
-  );
+  if (!empty($plans)) {
+    $items[] = array(
+      'path' => 'admin/content/types/deploy', 
+      'title' => t('Deploy'),
+      'description' => t('Add a content type to a deployment plan.'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('content_copy_deploy_add_form', $plans),
+      'access' => user_access('add items to deployment plan'),
+      'type' => MENU_LOCAL_TASK
+    );
+  }
   
   return $items;
-}
-
-/**
- * menu callback to deploy a content type
- */
-function content_copy_deploy_add($type = NULL) {  
-  $plans = deploy_get_plans();
-  if (!empty($plans)) {
-    $form = drupal_get_form('content_copy_deploy_add_form', $plans);
-    return $form;
-  }
-  else {
-    return "No deployment plans available";
-  }
 }
 
 /**

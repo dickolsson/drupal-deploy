@@ -6,16 +6,19 @@
  */
 function views_deploy_menu() {
   $items = array();
+  $plans = deploy_get_plans();
 
-  $items[] = array(
-    'path' => 'admin/build/views/deploy', 
-    'title' => t('Deploy'),
-    'description' => t('Add a view to a deployment plan.'),
-    'callback' => 'drupal_get_form',
-    'callback arguments' => array('views_deploy_add_form'),
-    'access' => user_access('add items to deployment plan'),
-    'type' => MENU_LOCAL_TASK
-  );
+  if (!empty($plans)) {
+    $items[] = array(
+      'path' => 'admin/build/views/deploy', 
+      'title' => t('Deploy'),
+      'description' => t('Add a view to a deployment plan.'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('views_deploy_add_form', $plans),
+      'access' => user_access('add items to deployment plan'),
+      'type' => MENU_LOCAL_TASK
+    );
+  }
   
   return $items;
 }
@@ -23,12 +26,7 @@ function views_deploy_menu() {
 /**
  * deploy view form
  */
-function views_deploy_add_form() {
-  $plans = deploy_get_plans();
-  if (empty($plans)) {
-    return "No deployment plans available";
-  }
-
+function views_deploy_add_form($plans) {
   $views = array();
   $result = db_query("SELECT name FROM {view_view} ORDER BY name");
   while ($view = db_fetch_array($result)) {
