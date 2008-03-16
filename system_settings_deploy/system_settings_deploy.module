@@ -18,16 +18,18 @@ function system_settings_deploy_form_alter($form_id, &$form) {
     $form['#submit'] = array('system_settings_deploy_form_submit' => array()) + (array)$form['#submit'];
   
     $plans = deploy_get_plans();
-    $plans['0'] = '<None>';
-    natsort($plans);
+    if (!empty($plans)) {
+      $plans['0'] = '<None>';
+      natsort($plans);
 
-    $form['deploy']['deploy_plan'] = array(
-      '#type' => 'select',
-      '#title' => t('Deployment Plan'),
-      '#description' => t('A deployment plan to add these settings to, or none'),
-      '#weight' => $deploy_weight,
-      '#options' => $plans,
-    );
+      $form['deploy']['deploy_plan'] = array(
+        '#type' => 'select',
+        '#title' => t('Deployment Plan'),
+        '#description' => t('A deployment plan to add these settings to, or none'),
+        '#weight' => $deploy_weight,
+        '#options' => $plans,
+      );
+    }
   }
 }
 
