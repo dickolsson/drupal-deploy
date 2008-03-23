@@ -104,7 +104,8 @@ function deploy_menu() {
   $items[] = array(
     'path' => 'admin/deploy/list',
     'title' => t('View deployment plan items'),
-    'callback' => 'deploy_list',
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('deploy_list'),
     'type' => MENU_CALLBACK,
     'access' => user_access('administer deployment'),
     'weight' => 1,
@@ -142,17 +143,23 @@ function deploy_menu() {
  * deployment overview page menu callback
  */
 function deploy_overview() {
-  $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => 2));
-
+  $ops_colspan = 2;
   $result = db_query("select * from {deploy_plan}");
-  while ($row = db_fetch_array($result)) {
-    $row = array(l($row['name'], 'admin/deploy/list/'. $row['pid']), l('edit', 'admin/deploy/plan/'. $row['pid']), l('delete', 'admin/deploy/delete/plan/'. $row['pid']));
+  while ($plan = db_fetch_array($result)) {
+    $items = deploy_get_plan_items($plan['pid']);
+    $row = array($plan['name'], l('edit', 'admin/deploy/plan/'. $plan['pid']), l('delete', 'admin/deploy/delete/plan/'. $plan['pid']));
+    if (!empty($items)) {
+      $row[] = l('details', 'admin/deploy/list/'. $plan['pid']);
+    }
     $rows[] = $row;
   }
   
   if (empty($rows)) {
     $rows[] = array(array('data' => t('No deployment plans available.'), 'colspan' => '4', 'class' => 'message'));
+    $ops_colspan = 3;
   }
+
+  $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => $ops_colspan));
 
   $output = theme('table', $header, $rows);
   
@@ -325,33 +332,66 @@ function deploy_server_form_submit($form_id, $form_values) {
 }
 
 /**
- * list deployment plan items menu callback
+ * list deployment plan items form
  */
 function deploy_list($pid = NULL) {
-  if (is_null($pid)) {
+  $items = deploy_get_plan_items($pid);
+  if (is_null($pid) || empty($items)) {
     drupal_goto('/admin/deploy');
   }
 
-  $output = "We will want to add item weighting here as well, since order of execution can matter";
+  // Build form tree
+  $form['#tree'] = TRUE;
+  foreach ($items as $i => $item) {
+    $form[$i]['module'] = array('#type' => 'item', '#value' => $item['module']);
+    $form[$i]['description'] = array('#type' => item, '#value' => $item['description']);
+    $form[$i]['weight'] = array('#type' => 'weight', '#default_value' => $item['weight']);
+    $form[$i]['iid'] = array('#type' => 'hidden', '#value' => $item['iid']);
+  }
+  $form['pid'] = array('#type' => 'hidden', '#value' => $pid);
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Save plan'));
 
-  $header = array(t('Module'), t('Description'), t('Operations'));
-  $result = db_query("select module, description, iid from {deploy_plan_items} where pid = %d", $pid);
-  while ($row = db_fetch_array($result)) {
-    $row = array($row['module'], $row['description'], l(t('Delete From Plan'), "/admin/deploy/delete/item/$pid/" . $row['iid'] ));
-    $rows[] = $row;
+  return $form;
+}
+
+/**
+ * theme the deploy plan items form
+ * some drag-and-dropification would be nice here
+ */
+function theme_deploy_list($form) {
+  $header = array(t('Module'), t('Description'), t('Weight'), t('Operations'));
+  $rows = array();
+  
+  foreach (element_children($form) as $i) {
+    $item = &$form[$i];
+    if (is_array($item['module'])) {
+      $rows[] = array(drupal_render($item['module']), 
+                  drupal_render($item['description']), 
+                  drupal_render($item['weight']),
+                  l('Delete', 'admin/deploy/delete/item/' . $item['iid']['#value']),
+                );
+    }
   }
   
-  if (empty($rows)) {
-    $rows[] = array(array('data' => t('No items have been added to this deployment.'), 'colspan' => '3', 'class' => 'message'));
-  }
+  $output = theme('table', $header, $rows, array('id' => 'plans'));
 
-  $output .= theme('table', $header, $rows);
+  $output .= drupal_render($form);
 
-  $output .= l('Push this plan live', 'admin/deploy/push/'. $pid);
-  
   return $output;
 }
 
+/**
+ * deploy plan items form submit (just updates the weightings)
+ */
+function deploy_list_submit($form_id, $form_values) {
+  foreach ($form_values as $i => $item) {
+    if (is_array($item)) {
+      db_query("update {deploy_plan_items} set weight = %d where iid = %d", $item['weight'], $item['iid']);
+    }
+  }
+  
+  return('admin/deploy/list/' . $form_values['pid']);
+}
 
 /**
  * return an assoc array of deployment plans of format pid => name
@@ -403,16 +443,22 @@ function deploy_delete_server($sid = NULL) {
  * delete an item from a deployment plan. 
  * should probably add a confirmation here
  */
-function deploy_delete_item($pid = NULL, $iid = NULL) {
-  if (is_null($iid) || is_null($pid)) {
+function deploy_delete_item($iid = NULL) {
+  $destination = drupal_get_destination();
+  
+  if (is_null($iid)) {
     drupal_goto('/admin/deploy');
   }
 
-  db_query("delete from {deploy_plan_items} where iid = %d", $iid);
+  $result = db_query("select * from {deploy_plan_items} where iid = %d", $iid);
+  if ($item = db_fetch_array($result)) {
+    $pid = $item['pid'];
+    db_query("delete from {deploy_plan_items} where iid = %d", $iid);
+    drupal_set_message('Item Deleted');
+    drupal_goto("/admin/deploy/list/$pid");
+  }
   
-  drupal_set_message('Item Deleted');
-  
-  drupal_goto("/admin/deploy/list/$pid");
+  drupal_goto("/admin/deploy");
 }
 
 /**
@@ -489,7 +535,7 @@ function deploy_pushform_submit($form_id, $form_values) {
   $url = $row['url'];
   $api_key = $row['api_key'];
   
-  $result = db_query("select * from deploy_plan_items where pid = %d", $pid);
+  $result = db_query("select * from deploy_plan_items where pid = %d order by weight", $pid);
   while ($row = db_fetch_array($result)) {
     call_user_func($row['module'] .'_deploy', $url, $api_key, $row['data']);
   }
@@ -532,3 +578,19 @@ function deploy_get_server($sid) {
   $result = db_query("select * from {deploy_servers} where sid = %d", $sid);
   return db_fetch_array($result);
 }
+
+/**
+ * retrieve all the plan items for a specified plan
+ */
+function deploy_get_plan_items($pid) {
+  $items = array();
+
+  $result = db_query("select * from {deploy_plan_items} where pid = %d order by weight", $pid);
+
+  while ($item = db_fetch_array($result)) {
+    $items[] = $item;
+  }
+
+  return $items;
+}
+

@@ -1,15 +1,12 @@
 HIGH PRIORITY (must be done before 1.0)
 ---------------------------------------
-- deployment plan item weighting
 - installation / implementation guide. FAQ
 - Delete confirmations
-- Views
 - Blocks and other non ssf settings
 - simpletests
 - doxygen
 - Logging / auditing (new table ?)
 - better error handling on services
-- figure out what to do with perms
 
 LOWER PRIORITY (can wait if need be)
 ------------------------------------
