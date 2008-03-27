@@ -67,6 +67,18 @@ function views_deploy_add_form_submit($form_id, $form_values) {
 }
 
 /**
+ * deploy view form validation callback
+ */
+function views_deploy_add_form_validate($form_id, $form_values) {
+  $view_name = $form_values['view_name'];
+  $result = db_query("select count(iid) as num_rows from {deploy_plan_items} where module = 'views' and pid = %d and data = '%s'", $form_values['pid'], $view_name);
+  $row = db_fetch_array($result);
+  if ($row['num_rows'] > 0) {
+    form_set_error('view_name', t("View $view_name already exists in the deployment plan."));
+  }
+}
+
+/**
  * deploy view deployment 'hook'
  */
 function views_deploy($url, $api_key, $view_name) {
@@ -77,7 +89,7 @@ function views_deploy($url, $api_key, $view_name) {
   
   $export = views_create_view_code($view_name);
 
-  watchdog('deploymeny', $export);
+  watchdog('deployment', $export);
   
   drupal_set_message(xmlrpc($url, 'views.importView', $api_key, $export));
 }
