@@ -72,8 +72,7 @@ function views_deploy_add_form_submit($form_id, $form_values) {
 function views_deploy_add_form_validate($form_id, $form_values) {
   $view_name = $form_values['view_name'];
   $result = db_query("select count(iid) as num_rows from {deploy_plan_items} where module = 'views' and pid = %d and data = '%s'", $form_values['pid'], $view_name);
-  $row = db_fetch_array($result);
-  if ($row['num_rows'] > 0) {
+  if (db_num_rows($result)) {
     form_set_error('view_name', t("View $view_name already exists in the deployment plan."));
   }
 }
