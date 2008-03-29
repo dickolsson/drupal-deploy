@@ -143,23 +143,22 @@ function deploy_menu() {
  * deployment overview page menu callback
  */
 function deploy_overview() {
-  $ops_colspan = 2;
   $result = db_query("select * from {deploy_plan}");
   while ($plan = db_fetch_array($result)) {
     $items = deploy_get_plan_items($plan['pid']);
-    $row = array($plan['name'], l('edit', 'admin/deploy/plan/'. $plan['pid']), l('delete', 'admin/deploy/delete/plan/'. $plan['pid']));
-    if (!empty($items)) {
-      $row[] = l('details', 'admin/deploy/list/'. $plan['pid']);
+    $plan_entry = l($plan['name'], 'admin/deploy/list/'. $plan['pid']);
+    if (empty($items)) {
+      $plan_entry = $plan['name'];
     }
+    $row = array($row[] = $plan_entry, l('edit', 'admin/deploy/plan/'. $plan['pid']), l('delete', 'admin/deploy/delete/plan/'. $plan['pid']));
     $rows[] = $row;
   }
   
   if (empty($rows)) {
     $rows[] = array(array('data' => t('No deployment plans available.'), 'colspan' => '4', 'class' => 'message'));
-    $ops_colspan = 3;
   }
 
-  $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => $ops_colspan));
+  $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => 2));
 
   $output = theme('table', $header, $rows);
   
