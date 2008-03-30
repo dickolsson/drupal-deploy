@@ -28,11 +28,11 @@ USAGE
 In order for deployments to work, your source server must be able to reach your 
 destination server on port 80. 
 
-1) Surf to admin/deploy and click "Add a new deployment plan". All a deployment 
+1) Surf to admin/build/deploy and click "Add a new deployment plan". All a deployment 
 plan needs is a name by which you can identify it. Enter that name and submit 
 the form. You should be returned to the deployment plan listing with your plan listed.
 
-2) Surf to admin/deploy/servers and click "Add a new server". You will need to 
+2) Surf to admin/build/deploy/servers and click "Add a new server". You will need to 
 enter a name for the server, a path to the destination servers XMLRPC Server 
 implementation (usually http://<yoursite>/services/xmlrpc) and the destination 
 server's API Key as created in the installation instructions. Submit the form.
@@ -46,12 +46,12 @@ server). Submit the form.
 implements system_settings_form (example: admin/settings/date-time). At the bottom 
 of the form you can choose a deployment plan. Choose one and submit the form. 
 
-3c) If you have enabled Views Deployment - Surf to /admin/buil/views. 
+3c) If you have enabled Views Deployment - Surf to /admin/build/views. 
 Click the "Deploy" tab. Choose a deployment plan and export you want to 
 export. Submit the form. If the view in question already exists on the other
 server, it will be updated.
 
-4) Return to admin/deploy and click the name of your deployment plan. You should 
+4) Return to admin/build/deploy and click the name of your deployment plan. You should 
 see the items above listed. 
 
 5) Now you can click "Push this plan live"

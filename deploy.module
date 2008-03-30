@@ -35,20 +35,20 @@ function deploy_menu() {
   $items = array();
 
   $items[] = array(
-    'path' => 'admin/deploy',
+    'path' => 'admin/build/deploy',
     'title' => t('Deployment'),
     'callback' => 'deploy_overview',
     'access' => user_access('administer deployment'),
     'description' => t('Deployment'),
   );
   $items[] = array(
-    'path' => 'admin/deploy/plans',
+    'path' => 'admin/build/deploy/plans',
     'title' => t('Plans'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'access' => user_access('administer deployment'),
   );
   $items[] = array(
-    'path' => 'admin/deploy/servers',
+    'path' => 'admin/build/deploy/servers',
     'title' => t('Servers'),
     'description' => t('Manage deployment servers'),
     'callback' => 'deploy_server_overview',
@@ -57,7 +57,7 @@ function deploy_menu() {
     'weight' => 3
   );    
   $items[] = array(
-    'path' => 'admin/deploy/add',
+    'path' => 'admin/build/deploy/add',
     'title' => t('Add a deployment plan'),
     'description' => t('Add a deployment plan.'),
     'callback' => 'drupal_get_form',
@@ -67,7 +67,7 @@ function deploy_menu() {
     'weight' => 2
   );    
   $items[] = array(
-    'path' => 'admin/deploy/plan',
+    'path' => 'admin/build/deploy/plan',
     'title' => t('Edit plan'),
     'callback' => 'drupal_get_form',
     'callback arguments' => array('deploy_plan_form'),
@@ -75,7 +75,7 @@ function deploy_menu() {
     'type' => MENU_CALLBACK,
   );
   $items[] = array(
-    'path' => 'admin/deploy/server/add',
+    'path' => 'admin/build/deploy/server/add',
     'title' => t('Add server'),
     'description' => t('Add a deployment server.'),
     'callback' => 'drupal_get_form',
@@ -85,7 +85,7 @@ function deploy_menu() {
     'weight' => 2
   );    
   $items[] = array(
-    'path' => 'admin/deploy/server',
+    'path' => 'admin/build/deploy/server',
     'title' => t('Edit server'),
     'description' => t('Edit a deployment server.'),
     'callback' => 'drupal_get_form',
@@ -94,7 +94,7 @@ function deploy_menu() {
     'type' => MENU_CALLBACK,
   );
   $items[] = array(
-    'path' => 'admin/deploy/push',
+    'path' => 'admin/build/deploy/push',
     'title' => t('Push a plan live'),
     'callback' => 'deploy_push',
     'type' => MENU_CALLBACK,
@@ -102,7 +102,7 @@ function deploy_menu() {
     'weight' => 1,
   );    
   $items[] = array(
-    'path' => 'admin/deploy/list',
+    'path' => 'admin/build/deploy/list',
     'title' => t('View deployment plan items'),
     'callback' => 'drupal_get_form',
     'callback arguments' => array('deploy_list'),
@@ -111,7 +111,7 @@ function deploy_menu() {
     'weight' => 1,
   );    
   $items[] = array(
-    'path' => 'admin/deploy/delete/item',
+    'path' => 'admin/build/deploy/delete/item',
     'title' => t('Delete a deployment plan item'),
     'callback' => 'deploy_delete_item',
     'type' => MENU_CALLBACK,
@@ -119,7 +119,7 @@ function deploy_menu() {
     'weight' => 1,
   );    
   $items[] = array(
-    'path' => 'admin/deploy/delete/plan',
+    'path' => 'admin/build/deploy/delete/plan',
     'title' => t('Delete a deployment plan'),
     'callback' => 'deploy_delete_plan',
     'type' => MENU_CALLBACK,
@@ -127,7 +127,7 @@ function deploy_menu() {
     'weight' => 1,
   );    
   $items[] = array(
-    'path' => 'admin/deploy/delete/server',
+    'path' => 'admin/build/deploy/delete/server',
     'title' => t('Delete a server'),
     'callback' => 'deploy_delete_server',
     'type' => MENU_CALLBACK,
@@ -146,11 +146,11 @@ function deploy_overview() {
   $result = db_query("select * from {deploy_plan}");
   while ($plan = db_fetch_array($result)) {
     $items = deploy_get_plan_items($plan['pid']);
-    $plan_entry = l($plan['name'], 'admin/deploy/list/'. $plan['pid']);
+    $plan_entry = l($plan['name'], 'admin/build/deploy/list/'. $plan['pid']);
     if (empty($items)) {
       $plan_entry = $plan['name'];
     }
-    $row = array($row[] = $plan_entry, l('edit', 'admin/deploy/plan/'. $plan['pid']), l('delete', 'admin/deploy/delete/plan/'. $plan['pid']));
+    $row = array($row[] = $plan_entry, l('edit', 'admin/build/deploy/plan/'. $plan['pid']), l('delete', 'admin/build/deploy/delete/plan/'. $plan['pid']));
     $rows[] = $row;
   }
   
@@ -162,7 +162,7 @@ function deploy_overview() {
 
   $output = theme('table', $header, $rows);
   
-  $output .= l("Add a New Deployment Plan", "/admin/deploy/add", array());
+  $output .= l("Add a New Deployment Plan", "/admin/build/deploy/add", array());
   
   return $output;
 }
@@ -224,7 +224,7 @@ function deploy_plan_form_submit($form_id, $form_values) {
     drupal_set_message(t('Plan added'));    
   }
   
-  return 'admin/deploy';
+  return 'admin/build/deploy';
 }
 
 /**
@@ -235,7 +235,7 @@ function deploy_server_overview() {
 
   $result = db_query("select * from {deploy_servers}");
   while ($row = db_fetch_array($result)) {
-    $row = array($row['description'], $row['url'], l('edit', 'admin/deploy/server/'. $row['sid']), l('delete', 'admin/deploy/delete/server/'. $row['sid']));
+    $row = array($row['description'], $row['url'], l('edit', 'admin/build/deploy/server/'. $row['sid']), l('delete', 'admin/build/deploy/delete/server/'. $row['sid']));
     $rows[] = $row;
   }
   
@@ -245,7 +245,7 @@ function deploy_server_overview() {
 
   $output = theme('table', $header, $rows);
   
-  $output .= l("Add a New Server", "/admin/deploy/server/add", array());
+  $output .= l("Add a New Server", "/admin/build/deploy/server/add", array());
   
   return $output;
 }
@@ -327,7 +327,7 @@ function deploy_server_form_submit($form_id, $form_values) {
     drupal_set_message(t('Deployment server added'));
   }
   
-  return 'admin/deploy/servers';
+  return 'admin/build/deploy/servers';
 }
 
 /**
@@ -336,7 +336,7 @@ function deploy_server_form_submit($form_id, $form_values) {
 function deploy_list($pid = NULL) {
   $items = deploy_get_plan_items($pid);
   if (is_null($pid) || empty($items)) {
-    drupal_goto('/admin/deploy');
+    drupal_goto('/admin/build/deploy');
   }
 
   // Build form tree
@@ -367,7 +367,7 @@ function theme_deploy_list($form) {
       $rows[] = array(drupal_render($item['module']), 
                   drupal_render($item['description']), 
                   drupal_render($item['weight']),
-                  l('Delete', 'admin/deploy/delete/item/' . $item['iid']['#value']),
+                  l('Delete', 'admin/build/deploy/delete/item/' . $item['iid']['#value']),
                 );
     }
   }
@@ -389,7 +389,7 @@ function deploy_list_submit($form_id, $form_values) {
     }
   }
   
-  return('admin/deploy/list/' . $form_values['pid']);
+  return('admin/build/deploy/list/' . $form_values['pid']);
 }
 
 /**
@@ -411,7 +411,7 @@ function deploy_get_plans() {
  */
 function deploy_delete_plan($pid = NULL) {
   if (is_null($pid)) {
-    drupal_goto('/admin/deploy');
+    drupal_goto('/admin/build/deploy');
   }
   
   db_query("delete from {deploy_plan_items} where pid = %d", $pid);
@@ -419,7 +419,7 @@ function deploy_delete_plan($pid = NULL) {
   
   drupal_set_message('Plan Deleted');
   
-  drupal_goto("/admin/deploy/");
+  drupal_goto("/admin/build/deploy/");
 }
 
 /**
@@ -428,14 +428,14 @@ function deploy_delete_plan($pid = NULL) {
  */
 function deploy_delete_server($sid = NULL) {
   if (is_null($sid)) {
-    drupal_goto('/admin/deploy/servers');
+    drupal_goto('/admin/build/deploy/servers');
   }
   
   db_query("delete from {deploy_servers} where sid = %d", $sid);
   
   drupal_set_message('Server Deleted');
   
-  drupal_goto("/admin/deploy/servers");
+  drupal_goto("/admin/build/deploy/servers");
 }
 
 /**
@@ -446,7 +446,7 @@ function deploy_delete_item($iid = NULL) {
   $destination = drupal_get_destination();
   
   if (is_null($iid)) {
-    drupal_goto('/admin/deploy');
+    drupal_goto('/admin/build/deploy');
   }
 
   $result = db_query("select * from {deploy_plan_items} where iid = %d", $iid);
@@ -454,10 +454,10 @@ function deploy_delete_item($iid = NULL) {
     $pid = $item['pid'];
     db_query("delete from {deploy_plan_items} where iid = %d", $iid);
     drupal_set_message('Item Deleted');
-    drupal_goto("/admin/deploy/list/$pid");
+    drupal_goto("/admin/build/deploy/list/$pid");
   }
   
-  drupal_goto("/admin/deploy");
+  drupal_goto("/admin/build/deploy");
 }
 
 /**
@@ -493,7 +493,7 @@ function deploy_add_to_plan($pid, $module, $description, $data) {
  */
 function deploy_push($pid) {
   if (is_null($pid)) {
-    drupal_goto('/admin/deploy');
+    drupal_goto('/admin/build/deploy');
   }
   
   $output = 'Choose a deployment server';
@@ -539,7 +539,7 @@ function deploy_pushform_submit($form_id, $form_values) {
     call_user_func($row['module'] .'_deploy', $url, $api_key, $row['data']);
   }
   
-  return "/admin/deploy/list/$pid";  
+  return "/admin/build/deploy/list/$pid";  
 }
 
 /**
@@ -580,11 +580,18 @@ function deploy_get_server($sid) {
 
 /**
  * retrieve all the plan items for a specified plan
+ * takes an optional module name, to return just the items for
+ * that module
  */
-function deploy_get_plan_items($pid) {
+function deploy_get_plan_items($pid, $module = NULL) {
   $items = array();
+  $sql = "select * from {deploy_plan_items} where pid = %d";
+  if (!is_null($module)) {
+    $sql .= " and module = '%s'";
+  }
+  $sql .= " order by weight";
 
-  $result = db_query("select * from {deploy_plan_items} where pid = %d order by weight", $pid);
+  $result = db_query($sql, $pid, $module);
 
   while ($item = db_fetch_array($result)) {
     $items[] = $item;
@@ -592,4 +599,3 @@ function deploy_get_plan_items($pid) {
 
   return $items;
 }
-
