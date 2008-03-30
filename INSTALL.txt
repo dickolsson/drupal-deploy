@@ -21,9 +21,8 @@ have not, visit http://drupal.org/project/services and do that first.
 
 2) Enable Services (under the Services group), XMLRPC Server (under Services - servers 
 group), Content Copy Service, Views Service and/or System Settings Service depending on your need 
-(under the Services - services group). (NOTE: if you wish to use Views Service, you
-will currently have to apply the patch at http://drupal.org/node/231243 to views_service.module
-in modules/services.)
+(under the Services - services group). (NOTE: if you wish to use the Views service, you will
+need the most recent dev snapshot of the services module.)
 
 3) Surf to /admin/build/services/settings on your site. 
 

@@ -75,5 +75,4 @@ system settings may not transfer properly.
 properly. These content types will also fail when being deployed. If you can Export 
 and then Import a content type, then it will work here too.
 
-- Views currently require this patch to views_service.module in Services - 
-http://drupal.org/node/231243
+- Views currently requires the most recent dev snapshot of the Services module
