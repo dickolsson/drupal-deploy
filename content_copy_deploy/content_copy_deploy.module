@@ -70,7 +70,7 @@ function content_copy_deploy_add_form_submit($form_id, $form_values) {
  */
 function content_copy_deploy_add_form_validate($form_id, $form_values) {
   $content_type = $form_values['content_type'];
-  $result = db_query("select count(iid) as num_rows from {deploy_plan_items} where module = 'content_copy' and pid = %d and data = '%s'", $form_values['pid'], $content_type);
+  $result = db_query("select * from {deploy_plan_items} where module = 'content_copy' and pid = %d and data = '%s'", $form_values['pid'], $content_type);
   if (db_num_rows($result)) {
     form_set_error('content_type', t("Content type $content_type already exists in the deployment plan."));
   }
