@@ -1,6 +1,5 @@
 <?php
-
-// $Id$
+// $Id
 
 /**
  * Implementation of hook_help().
@@ -113,7 +112,8 @@ function deploy_menu() {
   $items[] = array(
     'path' => 'admin/build/deploy/delete/item',
     'title' => t('Delete a deployment plan item'),
-    'callback' => 'deploy_delete_item',
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('deploy_delete_item_form'),
     'type' => MENU_CALLBACK,
     'access' => user_access('administer deployment'),
     'weight' => 1,
@@ -121,7 +121,8 @@ function deploy_menu() {
   $items[] = array(
     'path' => 'admin/build/deploy/delete/plan',
     'title' => t('Delete a deployment plan'),
-    'callback' => 'deploy_delete_plan',
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('deploy_delete_plan_form'),
     'type' => MENU_CALLBACK,
     'access' => user_access('administer deployment'),
     'weight' => 1,
@@ -129,7 +130,8 @@ function deploy_menu() {
   $items[] = array(
     'path' => 'admin/build/deploy/delete/server',
     'title' => t('Delete a server'),
-    'callback' => 'deploy_delete_server',
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('deploy_delete_server_form'),
     'type' => MENU_CALLBACK,
     'access' => user_access('administer deployment'),
     'weight' => 1,
@@ -418,58 +420,105 @@ function deploy_get_plans() {
 }
 
 /**
- * delete a deployment plan. 
- * should probably add a confirmation here
+ * delete a deployment plan confirmation form
  */
-function deploy_delete_plan($pid = NULL) {
-  if (is_null($pid)) {
-    drupal_goto('/admin/build/deploy');
+function deploy_delete_plan_form($pid = NULL) {
+  $plan = deploy_get_plan($pid);
+  if (!$plan) {
+    drupal_goto('admin/build/deploy');
   }
+
+  $form['pid'] = array('#type' => 'value', '#value' => $pid);
+
+  $form = confirm_form(
+    $form,
+    t('Are you sure you want to delete the deployment plan %plan_name?', array('%plan_name' => $plan['name'])),
+    'admin/build/deploy',
+    t('This action cannot be undone.'),
+    t('Delete'), 
+    t('Cancel')
+  );
+
+  return $form;
+}
+
+/**
+ * delete a deployment plan submit handler. 
+ */
+function deploy_delete_plan_form_submit($form_id, $form_values) {
+  db_query("delete from {deploy_plan_items} where pid = %d", $form_values['pid']);
+  db_query("delete from {deploy_plan} where pid = %d", $form_values['pid']);
   
-  db_query("delete from {deploy_plan_items} where pid = %d", $pid);
-  db_query("delete from {deploy_plan} where pid = %d", $pid);
-  
-  drupal_set_message('Plan Deleted');
+  drupal_set_message(t('Plan Deleted'));
   
   drupal_goto("/admin/build/deploy/");
 }
 
 /**
- * delete a deployment plan. 
- * should probably add a confirmation here
+ * delete a deployment plan confirmation form
  */
-function deploy_delete_server($sid = NULL) {
-  if (is_null($sid)) {
-    drupal_goto('/admin/build/deploy/servers');
+function deploy_delete_server_form($sid = NULL) {
+  $server = deploy_get_server($sid);
+  if (!$server) {
+    drupal_goto('admin/build/deploy/servers');
   }
+
+  $form['sid'] = array('#type' => 'value', '#value' => $sid);
+
+  $form = confirm_form(
+    $form,
+    t('Are you sure you want to delete the server %server_name?', array('%server_name' => $server['description'])),
+    'admin/build/deploy/servers',
+    t('This action cannot be undone.'),
+    t('Delete'), 
+    t('Cancel')
+  );
+
+  return $form;
+}
+
+/**
+ * delete a deployment server form submit handler. 
+ */
+function deploy_delete_server_form_submit($form_id, $form_values) {
+  db_query("delete from {deploy_servers} where sid = %d", $form_values['sid']);
   
-  db_query("delete from {deploy_servers} where sid = %d", $sid);
-  
-  drupal_set_message('Server Deleted');
+  drupal_set_message(t('Server Deleted'));
   
   drupal_goto("/admin/build/deploy/servers");
 }
 
 /**
- * delete an item from a deployment plan. 
- * should probably add a confirmation here
+ * delete an item from a deployment plan confirmation form. 
  */
-function deploy_delete_item($iid = NULL) {
-  $destination = drupal_get_destination();
-  
-  if (is_null($iid)) {
-    drupal_goto('/admin/build/deploy');
+function deploy_delete_item_form($iid = NULL) {
+  $item = deploy_get_plan_item($iid);
+  if (!$item) {
+    drupal_goto('admin/build/deploy');
   }
 
-  $result = db_query("select * from {deploy_plan_items} where iid = %d", $iid);
-  if ($item = db_fetch_array($result)) {
-    $pid = $item['pid'];
-    db_query("delete from {deploy_plan_items} where iid = %d", $iid);
-    drupal_set_message('Item Deleted');
-    drupal_goto("/admin/build/deploy/list/$pid");
-  }
-  
-  drupal_goto("/admin/build/deploy");
+  $form['iid'] = array('#type' => 'value', '#value' => $iid);
+  $form['pid'] = array('#type' => 'value', '#value' => $item['pid']);
+
+  $form = confirm_form(
+    $form,
+    t('Are you sure you want to delete the deployment plan item %item_name?', array('%item_name' => $item['description'])),
+    'admin/build/deploy/list/'. $item['pid'],
+    t('This action cannot be undone.'),
+    t('Delete'), 
+    t('Cancel')
+  );
+
+  return $form;
+}
+
+/**
+ * delete an item from a deployment plan form submit handler. 
+ */
+function deploy_delete_item_form_submit($form_id, $form_values) {
+  db_query("delete from {deploy_plan_items} where iid = %d", $form_values['iid']);
+  drupal_set_message(t('Item Deleted'));
+  drupal_goto("/admin/build/deploy/list/". $form_values['pid']);
 }
 
 /**
@@ -587,6 +636,14 @@ function deploy_get_plan($pid) {
  */
 function deploy_get_server($sid) {
   $result = db_query("select * from {deploy_servers} where sid = %d", $sid);
+  return db_fetch_array($result);
+}
+
+/**
+ * retrieve a deployment plan item as an array.
+ */
+function deploy_get_plan_item($iid) {
+  $result = db_query("select * from {deploy_plan_items} where iid = %d", $iid);
   return db_fetch_array($result);
 }
 
