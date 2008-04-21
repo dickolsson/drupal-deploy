@@ -88,7 +88,5 @@ function views_deploy($url, $api_key, $view_name) {
   
   $export = views_create_view_code($view_name);
 
-  watchdog('deployment', $export);
-  
-  drupal_set_message(xmlrpc($url, 'views.importView', $api_key, $export));
+  return xmlrpc($url, 'views.importView', $api_key, $export);
 }
