@@ -540,7 +540,7 @@ function deploy_install_items($module, $form_id, $data) {
  */
 function deploy_add_to_plan($pid, $module, $description, $data) {
   $iid = db_next_id('{deploy_plan_items}_iid');
-  $result = db_query("insert into deploy_plan_items (iid, pid, module, description, data) values (%d, %d, '%s', '%s', '%s')", $iid, $pid, $module, $description, $data);
+  $result = db_query("insert into {deploy_plan_items} (iid, pid, module, description, data) values (%d, %d, '%s', '%s', '%s')", $iid, $pid, $module, $description, $data);
   if (!$result) {
     drupal_set_message("an error occured");
   }
@@ -590,12 +590,12 @@ function deploy_pushform($pid) {
 function deploy_pushform_submit($form_id, $form_values) {
   $sid = $form_values['sid'];
   $pid = $form_values['pid'];
-  $result = db_query("select * from deploy_servers where sid = %d", $sid);
+  $result = db_query("select * from {deploy_servers} where sid = %d", $sid);
   $row = db_fetch_array($result);
   $url = $row['url'];
   $api_key = $row['api_key'];
   
-  $result = db_query("select * from deploy_plan_items where pid = %d order by weight", $pid);
+  $result = db_query("select * from {deploy_plan_items} where pid = %d order by weight", $pid);
   while ($row = db_fetch_array($result)) {
     call_user_func($row['module'] .'_deploy', $url, $api_key, $row['data']);
   }
