@@ -1,15 +1,10 @@
 HIGH PRIORITY (must be done before 1.0)
 ---------------------------------------
 - installation / implementation guide. FAQ
-- Delete confirmations
-- Blocks and other non ssf settings
 - simpletests
 - doxygen
-- Logging / auditing (new table ?)
-- better error handling on services
 
 LOWER PRIORITY (can wait if need be)
 ------------------------------------
-- Confirmation of install (?)
 - move some code to includes (plan_admin.inc / server_admin.inc)
 - better menu organization (so breadcrumb is better)

@@ -50,7 +50,7 @@ function system_settings_deploy_form_submit($form_id, $form_values) {
 
   // if a deployment plan is submitted then add these settings
   if ($pid != '0') {
-    deploy_add_to_plan($pid, 'system_settings', $form_id, $data);
+    deploy_add_to_plan($pid, 'system_settings', 'Settings: '. $form_id, $data);
   }
 
   // either way we still want to update any existing plans that include these
@@ -65,5 +65,5 @@ function system_settings_deploy_form_submit($form_id, $form_values) {
  * deployment "hook"
  */
 function system_settings_deploy($url, $api_key, $data) {
-  drupal_set_message(xmlrpc($url, 'system_settings.import', $api_key, unserialize($data)));
+ return xmlrpc($url, 'system_settings.import', $api_key, unserialize($data));
 }

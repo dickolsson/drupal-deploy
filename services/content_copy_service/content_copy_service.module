@@ -35,7 +35,7 @@ function content_copy_service_service() {
           '#name'         => 'export',
           '#type'         => 'text',
           '#description'  => t('Text of a content copy export'))),
-      '#return'   => 'string',
+      '#return'   => 'boolean',
       '#help'     => t('Import a content type macro')),
       
     // content_copy.export
@@ -56,16 +56,28 @@ function content_copy_service_service() {
  * Content copy import service callback
  */
 function content_copy_service_import($type_name, $export) {
-  if ($type_name == 'create') {
+
+  // if the type does not already exist, then we assume that
+  // we are creating a new content type
+  if (!array_key_exists($type_name, content_copy_types())) {
     $type_name = '<create>';
   }
 
   $values = array('type_name' => $type_name, 'macro' => $export, 'op' => 'Submit');
-  $retval = drupal_execute('content_copy_import_form', $values);
+  drupal_execute('content_copy_import_form', $values);
+  
+  if ($errors = form_get_errors()) {
+    foreach ($errors as $error) {
+      $msg .= "$error ";
+    }
+    return services_error("Content Copy Import Error: $msg");
+    watchdog('deploy', $msg);
+  }
+  else {
+    watchdog("services", "Content Copy Import Service run.");
+  }
 
-  watchdog("Services", "Content Copy Import Service run. Results: $retval");
-
-  return $retval;
+  return TRUE;
 }
 
 /**
@@ -73,7 +85,7 @@ function content_copy_service_import($type_name, $export) {
  */
 function content_copy_service_export($type_name) {
   if (!array_key_exists($type_name, node_get_types())) {
-    return services_error("Content Copy Export: content type $type_name does not exist");
+    return services_error("Content type $type_name does not exist");
   }
   
   $groups = array();
@@ -92,7 +104,7 @@ function content_copy_service_export($type_name) {
   
   $retval = content_copy_export('content_copy_export_form', $values);
   
-  watchdog("Services", "Content Copy Export Service run for content type $type_name.");
+  watchdog("services", "Content Copy Export Service run for content type $type_name.");
 
   return $retval;
 }

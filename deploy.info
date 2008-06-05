@@ -1,4 +1,4 @@
-; $Id$
+; $Id:
 name = Deployment
 description = "Framework to deploy Drupal data between servers"
 package = Deployment

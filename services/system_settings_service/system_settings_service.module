@@ -40,5 +40,5 @@ function system_settings_service_import($form_values) {
   $form_id = $form_values['form_id'];
   system_settings_form_submit($form_id, $form_values);
   watchdog("Services", "System Settings Import Service run for $form_id.");
-  return "$form_id imported";
+  return TRUE;
 }

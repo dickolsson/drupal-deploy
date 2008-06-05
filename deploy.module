@@ -56,6 +56,23 @@ function deploy_menu() {
     'weight' => 3
   );    
   $items[] = array(
+    'path' => 'admin/build/deploy/logs',
+    'title' => t('Deployment Log'),
+    'description' => t('View logs of past deployments'),
+    'callback' => 'deploy_logs_overview',
+    'access' => user_access('administer deployment'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 4
+  );    
+  $items[] = array(
+    'path' => 'admin/build/deploy/logs/details',
+    'title' => t('Deployment Log Details'),
+    'description' => t('View detailed logs of a past deployment'),
+    'callback' => 'deploy_logs_details',
+    'access' => user_access('administer deployment'),
+    'type' => MENU_CALLBACK,
+  );    
+  $items[] = array(
     'path' => 'admin/build/deploy/add',
     'title' => t('Add a deployment plan'),
     'description' => t('Add a deployment plan.'),
@@ -96,6 +113,14 @@ function deploy_menu() {
     'path' => 'admin/build/deploy/push',
     'title' => t('Push a plan live'),
     'callback' => 'deploy_push',
+    'type' => MENU_CALLBACK,
+    'access' => user_access('deploy items'),
+    'weight' => 1,
+  );    
+  $items[] = array(
+    'path' => 'admin/build/deploy/push/results',
+    'title' => t('Push results'),
+    'callback' => 'deploy_push_results',
     'type' => MENU_CALLBACK,
     'access' => user_access('deploy items'),
     'weight' => 1,
@@ -150,13 +175,14 @@ function deploy_overview() {
     $items = deploy_get_plan_items($plan['pid']);
     $plan_entry = l($plan['name'], 'admin/build/deploy/list/'. $plan['pid']);
     if (empty($items)) {
-      $plan_entry = $plan['name'];
+      $plan_entry = check_plain($plan['name']);
     }
     $row = array( 
       $plan_entry, 
-      l('edit', 'admin/build/deploy/plan/'. $plan['pid']), 
-      l('delete', 'admin/build/deploy/delete/plan/'. $plan['pid']),
-      l('push', 'admin/build/deploy/push/'. $plan['pid']),
+      check_plain($plan['description']),
+      l(t('edit'), 'admin/build/deploy/plan/'. $plan['pid']), 
+      l(t('delete'), 'admin/build/deploy/delete/plan/'. $plan['pid']),
+      l(t('push'), 'admin/build/deploy/push/'. $plan['pid']),
     );
     $rows[] = $row;
   }
@@ -167,6 +193,7 @@ function deploy_overview() {
 
   $header = array(
     t('Name'), 
+    t('Description'), 
     array(
       'data' => t('Operations'), 
       'colspan' => 3,
@@ -175,7 +202,7 @@ function deploy_overview() {
 
   $output = theme('table', $header, $rows);
   
-  $output .= l("Add a New Deployment Plan", "/admin/build/deploy/add", array());
+  $output .= l(t("Add a New Deployment Plan"), "/admin/build/deploy/add", array());
   
   return $output;
 }
@@ -198,9 +225,18 @@ function deploy_plan_form($pid = NULL) {
     '#type' => 'textfield',
     '#size' => 30,
     '#maxlength' => 50,
+    '#required' => TRUE,
     '#default_value' => $plan['name'],
     '#description' => t('A unique name for this deployment plan.'),
   );
+
+  $form['plan_description'] = array(
+    '#title' => t('Description'),
+    '#type' => 'textarea',
+    '#default_value' => $plan['description'],
+    '#description' => t('Information about this deployment plan, and the items being deployed.'),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
@@ -210,30 +246,20 @@ function deploy_plan_form($pid = NULL) {
 }
 
 /**
- * deployment plan form validator
- */
-function deploy_plan_form_validate($form_id, $form_values) {
-  if ($form_values['plan_name'] == '') {
-    form_set_error('plan_name', t('Plan name is required'));
-  }
-}
-
-/**
  * add deployment plan form submit function
  */
 function deploy_plan_form_submit($form_id, $form_values) {
-  $name = $form_values['plan_name'];
+  global $user;
 
-  // if form_values has 'pid', then this is an update. Otherwise it is an
-  // insert
+  // If $form_values has 'pid', then this is an update. Otherwise it is an
+  // insert.
   if (array_key_exists('pid', $form_values)) {
-    $pid = $form_values['pid'];
-    db_query("update {deploy_plan} set name = '%s' where pid = %d", $name, $pid);
+    db_query("update {deploy_plan} set name = '%s', description = '%s' where pid = %d", $form_values['plan_name'], $form_values['plan_description'], $form_values['pid']);
     drupal_set_message(t('Plan updated'));    
   }
   else {
     $pid = db_next_id('{deploy_plan}_pid');
-    db_query("insert into {deploy_plan} (pid, name) values (%d, '%s')", $pid, $name);
+    db_query("insert into {deploy_plan} (pid, name, description) values (%d, '%s', '%s')", $pid, $form_values['plan_name'], $form_values['plan_description']);
     drupal_set_message(t('Plan added'));    
   }
   
@@ -248,7 +274,7 @@ function deploy_server_overview() {
 
   $result = db_query("select * from {deploy_servers}");
   while ($row = db_fetch_array($result)) {
-    $row = array($row['description'], $row['url'], l('edit', 'admin/build/deploy/server/'. $row['sid']), l('delete', 'admin/build/deploy/delete/server/'. $row['sid']));
+    $row = array(check_plain($row['description']), check_plain($row['url']), l(t('edit'), 'admin/build/deploy/server/'. $row['sid']), l(t('delete'), 'admin/build/deploy/delete/server/'. $row['sid']));
     $rows[] = $row;
   }
   
@@ -258,7 +284,7 @@ function deploy_server_overview() {
 
   $output = theme('table', $header, $rows);
   
-  $output .= l("Add a New Server", "/admin/build/deploy/server/add", array());
+  $output .= l(t("Add a New Server"), "/admin/build/deploy/server/add", array());
   
   return $output;
 }
@@ -355,8 +381,11 @@ function deploy_list($pid = NULL) {
   // Build form tree
   $form['#tree'] = TRUE;
   foreach ($items as $i => $item) {
+    $account = user_load(array('uid' => $item['uid']));
+    $added_by = $account->name ." on ". format_date($item['ts'], 'small');
     $form[$i]['module'] = array('#type' => 'item', '#value' => $item['module']);
     $form[$i]['description'] = array('#type' => item, '#value' => $item['description']);
+    $form[$i]['added_by'] = array('#type' => item, '#value' => $added_by);
     $form[$i]['weight'] = array('#type' => 'weight', '#default_value' => $item['weight']);
     $form[$i]['iid'] = array('#type' => 'hidden', '#value' => $item['iid']);
   }
@@ -371,7 +400,7 @@ function deploy_list($pid = NULL) {
  * some drag-and-dropification would be nice here
  */
 function theme_deploy_list($form) {
-  $header = array(t('Module'), t('Description'), t('Weight'), t('Operations'));
+  $header = array(t('Module'), t('Description'), t('Added by'), t('Weight'), t('Operations'));
   $rows = array();
   
   foreach (element_children($form) as $i) {
@@ -379,8 +408,9 @@ function theme_deploy_list($form) {
     if (is_array($item['module'])) {
       $rows[] = array(drupal_render($item['module']), 
                   drupal_render($item['description']), 
+                  drupal_render($item['added_by']), 
                   drupal_render($item['weight']),
-                  l('Delete', 'admin/build/deploy/delete/item/' . $item['iid']['#value']),
+                  l(t('Delete'), 'admin/build/deploy/delete/item/'. $item['iid']['#value']),
                 );
     }
   }
@@ -403,7 +433,7 @@ function deploy_list_submit($form_id, $form_values) {
   }
   
   drupal_set_message(t('Deployment plan saved.'));
-  return('admin/build/deploy/');
+  return 'admin/build/deploy/';
 }
 
 /**
@@ -539,10 +569,12 @@ function deploy_install_items($module, $form_id, $data) {
  * add data to a deployment plan
  */
 function deploy_add_to_plan($pid, $module, $description, $data) {
+  global $user;
+  
   $iid = db_next_id('{deploy_plan_items}_iid');
-  $result = db_query("insert into {deploy_plan_items} (iid, pid, module, description, data) values (%d, %d, '%s', '%s', '%s')", $iid, $pid, $module, $description, $data);
+  $result = db_query("insert into {deploy_plan_items} (iid, pid, uid, ts, module, description, data) values (%d, %d, %d, %d, '%s', '%s', '%s')", $iid, $pid, $user->uid, time(), $module, $description, $data);
   if (!$result) {
-    drupal_set_message("an error occured");
+    drupal_set_message(t("An error occured."));
   }
   else {
     drupal_set_message("$description successfully added to plan");
@@ -557,7 +589,7 @@ function deploy_push($pid) {
     drupal_goto('/admin/build/deploy');
   }
   
-  $output = 'Choose a deployment server';
+  $output = t('Choose a deployment server');
   $output .= drupal_get_form('deploy_pushform', $pid);
 
   return $output;
@@ -565,7 +597,10 @@ function deploy_push($pid) {
 
 function deploy_pushform($pid) {
   $servers = _deploy_get_servers();
-  
+  if (empty($servers)) {
+    drupal_set_message(t("There are no servers defined. Please define a server using the Servers tab before pushing your deployment plan."));
+    drupal_goto("admin/build/deploy");
+  }
   $form['pid'] = array(
     '#type' => 'hidden',
     '#value' => $pid,
@@ -588,19 +623,49 @@ function deploy_pushform($pid) {
  * submit handler for deployment push form
  */
 function deploy_pushform_submit($form_id, $form_values) {
-  $sid = $form_values['sid'];
+  global $user;
+
   $pid = $form_values['pid'];
-  $result = db_query("select * from {deploy_servers} where sid = %d", $sid);
-  $row = db_fetch_array($result);
-  $url = $row['url'];
-  $api_key = $row['api_key'];
+  $plan = deploy_get_plan($pid);
+
+  $sid = $form_values['sid'];
+  $server = deploy_get_server($sid);
+  $url = $server['url'];
+  $api_key = $server['api_key'];
   
-  $result = db_query("select * from {deploy_plan_items} where pid = %d order by weight", $pid);
-  while ($row = db_fetch_array($result)) {
-    call_user_func($row['module'] .'_deploy', $url, $api_key, $row['data']);
+  $deploy_fatal = FALSE;
+
+  // rather than save foreign keys out to the server/plan/user in the log,
+  // I'm saving actual identifying data. This keeps the log pure in case
+  // associated data gets deleted. 
+  $dlid = db_next_id('{deploy_log}_dlid');
+  db_query("insert into {deploy_log} (dlid, plan, server, username, ts) values (%d, '%s', '%s', '%s', %d)", $dlid, $plan['name'], $server['description'], $user->name, time());
+  
+  $items = db_query("select * from {deploy_plan_items} where pid = %d order by weight", $pid);
+  while ($item = db_fetch_array($items)) {
+    if (!$deploy_fatal) {
+      $xmlrpc_result = call_user_func($item['module'] .'_deploy', $url, $api_key, $item['data']);
+      if ($xmlrpc_result === FALSE) {
+        $deploy_fatal = TRUE;
+        $result = t('Error');
+        $message = xmlrpc_error_msg();
+      }
+      else {
+        $result = t('Success');
+        $message = '';
+      }
+    }
+    else {
+      $result = t('Not Sent');
+      $message = t('Item not sent due to prior fatal error.');
+    }
+    
+    $dldid = db_next_id('{deploy_log_details}_dldid');
+    db_query("insert into {deploy_log_details} (dldid, dlid, module, description, result, message) values (%d, %d, '%s', '%s', '%s', '%s')", $dldid, $dlid, $item['module'], $item['description'], $result, $message);
   }
   
-  return "/admin/build/deploy/list/$pid";  
+    
+  return "/admin/build/deploy/logs/details/$dlid";  
 }
 
 /**
@@ -668,3 +733,71 @@ function deploy_get_plan_items($pid, $module = NULL) {
 
   return $items;
 }
+
+/**
+ * deployment logs overview page menu callback
+ */
+function deploy_logs_overview() {
+  $result = pager_query("select * from {deploy_log}", 20);
+  while ($log = db_fetch_array($result)) {
+    $row = array( 
+      l($log['plan'], 'admin/build/deploy/logs/details/'. $log['dlid']),
+      $log['username'],
+      format_date($log['ts'], 'small'),
+      $log['server'],
+    );
+    $rows[] = $row;
+  }
+  
+  if (empty($rows)) {
+    $rows[] = array(array('data' => t('No deployment plans have been pushed.'), 'colspan' => '4', 'class' => 'message'));
+  }
+
+  $header = array(
+    t('Plan'),
+    t('Pushed By'),
+    t('When'),
+    t('To Server') 
+  );
+
+  $output = theme('table', $header, $rows);
+  
+  return $output;
+}
+
+/**
+ * view the results of a push
+ */
+function deploy_logs_details($dlid) {
+  $rows = array();
+  $styles = array(
+    'Error' => 'background-color: #fcc',
+    'Not Sent' => 'background-color: #ffd',
+    'Success' => '',
+  );
+  
+  $result = db_query("select * from {deploy_log_details} where dlid = %d", $dlid);
+  while ($log_detail = db_fetch_array($result)) {
+    $row = array('data' => 
+      array(
+        $log_detail['module'], 
+        $log_detail['description'],
+        $log_detail['result'],
+        $log_detail['message'],
+      ),
+      'style' => $styles[$log_detail['result']],
+    );
+    $rows[] = $row;
+  }
+
+  $header = array(
+    t('Module'),
+    t('Description'),
+    t('Result'),
+    t('Message') 
+  );
+
+  return theme('table', $header, $rows);
+
+}
+

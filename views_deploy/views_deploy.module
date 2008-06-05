@@ -42,6 +42,8 @@ function views_deploy_add_form($plans) {
   $form['view_name'] = array(
     '#title' => t('View'),
     '#type' => 'select',
+    '#multiple' => TRUE,
+    '#required' => TRUE,
     '#options' => $views,
     '#description' => t('The view to deploy'),
   );
@@ -57,11 +59,12 @@ function views_deploy_add_form($plans) {
  */
 function views_deploy_add_form_submit($form_id, $form_values) {
   $pid = $form_values['pid'];
-  $view_name = $form_values['view_name'];
   $module = 'views';
-  $description = "View: $view_name";
 
-  deploy_add_to_plan($pid, $module, $description, $view_name);
+  foreach ($form_values['view_name'] as $view_name) {
+    $description = "View: $view_name";
+    deploy_add_to_plan($pid, $module, $description, $view_name);
+  }
 
   return "admin/build/deploy/list/$pid";
 }
@@ -70,10 +73,11 @@ function views_deploy_add_form_submit($form_id, $form_values) {
  * deploy view form validation callback
  */
 function views_deploy_add_form_validate($form_id, $form_values) {
-  $view_name = $form_values['view_name'];
-  $result = db_query("select * from {deploy_plan_items} where module = 'views' and pid = %d and data = '%s'", $form_values['pid'], $view_name);
-  if (db_num_rows($result)) {
-    form_set_error('view_name', t("View $view_name already exists in the deployment plan."));
+  foreach ($form_values['view_name'] as $view_name) {
+    $result = db_query("select * from {deploy_plan_items} where module = 'views' and pid = %d and data = '%s'", $form_values['pid'], $view_name);
+    if (db_num_rows($result)) {
+      form_set_error('view_name', t("View $view_name already exists in the deployment plan."));
+    }
   }
 }
 
@@ -82,7 +86,7 @@ function views_deploy_add_form_validate($form_id, $form_values) {
  */
 function views_deploy($url, $api_key, $view_name) {
   $view = views_get_view($view_name);
-  if ($view == null) {
+  if (is_null($view)) {
     drupal_set_message(t("View $view_name does not exist."));
   }
   

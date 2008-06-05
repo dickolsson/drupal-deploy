@@ -41,7 +41,9 @@ function content_copy_deploy_add_form($plans) {
     $form['content_type'] = array(
       '#title' => t('Content Type'),
       '#type' => 'select',
+      '#multiple' => TRUE,
       '#options' => $types,
+      '#required' => TRUE,
       '#description' => t('The content type to deploy'),
     );
     $form['submit'] = array(
@@ -56,11 +58,12 @@ function content_copy_deploy_add_form($plans) {
  */
 function content_copy_deploy_add_form_submit($form_id, $form_values) {
   $pid = $form_values['pid'];
-  $content_type = $form_values['content_type'];
   $module = 'content_copy';
-  $description = "Content Type: $content_type";
 
-  deploy_add_to_plan($pid, $module, $description, $content_type);
+  foreach ($form_values['content_type'] as $content_type) {
+    $description = "Content Type: $content_type";
+    deploy_add_to_plan($pid, $module, $description, $content_type);
+  }
 
   return "admin/build/deploy/list/$pid";
 }
@@ -69,10 +72,11 @@ function content_copy_deploy_add_form_submit($form_id, $form_values) {
  * deploy content type form validation callback
  */
 function content_copy_deploy_add_form_validate($form_id, $form_values) {
-  $content_type = $form_values['content_type'];
-  $result = db_query("select * from {deploy_plan_items} where module = 'content_copy' and pid = %d and data = '%s'", $form_values['pid'], $content_type);
-  if (db_num_rows($result)) {
-    form_set_error('content_type', t("Content type $content_type already exists in the deployment plan."));
+  foreach ($form_values['content_type'] as $content_type) {
+    $result = db_query("select * from {deploy_plan_items} where module = 'content_copy' and pid = %d and data = '%s'", $form_values['pid'], $content_type);
+    if (db_num_rows($result)) {
+      form_set_error('content_type', t("Content type $content_type already exists in the deployment plan."));
+    }
   }
 }
 
@@ -93,10 +97,8 @@ function content_copy_deploy($url, $api_key, $content_type) {
     'groups' => $groups,
     'fields' => $fields
   );
-  
+
   $export = content_copy_export('content_copy_export_form', $values);
 
-  // for the moment, we are assuming any deployed content type is being newly created
-  // so we're hardcoding create here
-  drupal_set_message(xmlrpc($url, 'content_copy.import', $api_key, 'create', $export));
+  return xmlrpc($url, 'content_copy.import', $api_key, $content_type, $export);
 }
