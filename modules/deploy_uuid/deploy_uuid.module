@@ -246,6 +246,10 @@ function deploy_uuid_comment(&$a1, $op) {
         '#type' => 'hidden',
         '#default_value' => '',
       );
+      $form['deploy'] = array(
+        '#type' => 'hidden',
+        '#default_value' => '',
+      );
     }
   }
 
