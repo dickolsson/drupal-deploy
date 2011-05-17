@@ -43,6 +43,9 @@ function nodereference_node_deploy(&$node) {
             }  
           }
         }
+        else {
+          $field[$key]['nid'] = array('nid' => '');
+        }
       }
       $node->{$field_name} = $field;
     }
