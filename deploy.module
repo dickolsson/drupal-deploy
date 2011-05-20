@@ -936,8 +936,17 @@ function deploy_ahah_auth_form() {
     $auth_type = $server['auth_type'];
   }
 
-  $settings = deploy_auth_invoke($auth_type, 'form callback', $server);
-  $cached_form['auth_wrapper']['settings'] = $settings;
+  // If we've got a server and an auth type, add the appropriate form.
+  if (!empty($server) && !empty($auth_type)) {
+    $settings = deploy_auth_invoke($auth_type, 'form callback', $server);
+    $cached_form['auth_wrapper']['settings'] = $settings;
+  }
+  // We proably selected <none>, so unset the settings form so we get an
+  // empty auth form.
+  else {
+    unset($cached_form['auth_wrapper']['settings']);
+  }
+
   form_set_cache($_POST['form_build_id'], $cached_form, $cached_form_state);
   $form_state = array('submitted' => FALSE);
   $options = form_builder('deploy_ahah_auth_form', $cached_form['auth_wrapper'], $form_state);
