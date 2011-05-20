@@ -238,7 +238,10 @@ function node_deploy_node($node) {
   // hook, other modules have this extra information in case they need it.
   $node->remote_nid = $remote_nid;
   // Now let all the modules that extend node make their own adjustments
-  module_invoke_all('node_deploy', $node);
+  foreach (module_implements('node_deploy') as $module) {
+    $function = $module . '_node_deploy';
+    $function($node);
+  }
 
   // Finally set the node's ID to match the remote nid
   if (isset($node->remote_nid)) {
