@@ -34,6 +34,7 @@ function filefield_deploy($fid) {
   }
   else {
     $file_info['fid'] = NULL;
+    $file_info['timestamp'] = time();
     $file_info['status'] = FILE_STATUS_TEMPORARY;
   }
   // The filefield service requires an object and I don't have time
@@ -144,10 +145,10 @@ function filefield_node_deploy(&$node) {
       // data when the file doesn't exist. This is why we need to check that the field's
       // fid is not 0. 
       if ($node->{$field}) {
-        foreach ($node->{$field} as &$file) {
+        foreach ($node->{$field} as $key => $file) {
           if ($file['fid'] != 0) {
             $remote_key = deploy_get_remote_key($file['uuid'], 'files');
-            $file['fid'] = $remote_key['fid'];
+            $node->{$field}[$key]['fid'] = $remote_key['fid'];
           }
         }
       }
