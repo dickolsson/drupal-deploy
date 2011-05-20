@@ -1,5 +1,6 @@
 name = "Deploy book pages"
 description = "Deploy book pages using the Deployment framework"
 dependencies[] = deploy
+dependencies[] = node_deploy
 package = Deployment
 core = 6.x

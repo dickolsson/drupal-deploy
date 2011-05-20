@@ -2,5 +2,6 @@ name = "Deploy Files"
 description = "Deploy filefield files using the Deployment framework"
 dependencies[] = deploy
 dependencies[] = filefield
+dependencies[] = node_deploy
 package = Deployment
 core = 6.x

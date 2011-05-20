@@ -3,5 +3,6 @@ description = "Deploy CCK userreference fields using the Deployment framework"
 dependencies[] = deploy
 dependencies[] = userreference
 dependencies[] = user_deploy
+dependencies[] = node_deploy
 package = Deployment
 core = 6.x
