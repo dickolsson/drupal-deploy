@@ -8,10 +8,10 @@
  * Implementation of hook_drush_command().
  */
 function deploy_drush_command() {
-  // This hook is fired before Drupal is bootstraped long enough to find out
+  // Drupal isn't bootstraped long enough, when this hook is fired, to find out
   // what authentication methods and options that are available. So we must
-  // execute the full bootstrap here.
-  drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_FULL);
+  // execute the full bootstrap here. Sorry for that.
+  drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
   $items = array();
   // Fetch all auth types to find out what options they have.
