@@ -39,7 +39,8 @@ function nodereference_node_deploy(&$node) {
             $uuid = deploy_uuid_get_node_uuid($nodereference['nid']);
             $remote_data = deploy_get_remote_key(deploy_uuid_get_node_uuid($nodereference['nid']), 'node');
             if ($remote_data) {
-              $field[$key]['nid'] = $remote_data['nid'];
+              // This format works for all widgets.
+              $field['nid']['nid'][$remote_data['nid']] = $remote_data['nid'];
             }  
           }
         }
