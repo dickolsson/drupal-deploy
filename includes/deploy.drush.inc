@@ -12,25 +12,27 @@ function deploy_drush_command() {
   // what authentication methods and options that are available. So we must
   // execute the full bootstrap here. Sorry for that.
   drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-
   $items = array();
-  // Fetch all auth types to find out what options they have.
-  $auth_types = deploy_get_auth_types();
-  $auth_options = array();
-  foreach ($auth_types as $auth_type => $auth_info) {
-    $form = deploy_auth_invoke($auth_type, 'form callback');
-    foreach ($form as $option => $control) {
-      $auth_options[$option] = dt("Only when server is using !title.", array('!title' => drupal_strtolower($auth_info['title']))) . ' ' . $control['#description'];
+  // Drush executes this hook even if the module is disabled.
+  if (module_exists('deploy')) {
+    // Fetch all auth types to find out what options they have.
+    $auth_types = deploy_get_auth_types();
+    $auth_options = array();
+    foreach ($auth_types as $auth_type => $auth_info) {
+      $form = deploy_auth_invoke($auth_type, 'form callback');
+      foreach ($form as $option => $control) {
+        $auth_options[$option] = dt("Only when server is using !title.", array('!title' => drupal_strtolower($auth_info['title']))) . ' ' . $control['#description'];
+      }
     }
+    $items['deploy'] = array(
+      'description' => 'Executes a deployment plan',
+      'options' => array (
+        'plan' => 'The pid of the plan you want to deploy.',
+        'server' => 'The sid of the server you want to deploy to.',
+        'silent' => 'Setting this to any value will suppress the file listing on deployment.',
+      ) + $auth_options,
+    );
   }
-  $items['deploy'] = array(
-    'description' => 'Executes a deployment plan',
-    'options' => array (
-      'plan' => 'The pid of the plan you want to deploy.',
-      'server' => 'The sid of the server you want to deploy to.',
-      'silent' => 'Setting this to any value will suppress the file listing on deployment.',
-    ) + $auth_options,
-  );
   return $items;
 }
 
