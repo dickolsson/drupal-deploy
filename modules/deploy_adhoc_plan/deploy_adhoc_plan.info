@@ -1,0 +1,6 @@
+name = Ad Hoc Deployment Plans
+description = Create ad hoc deployment plans associated with user sessions.
+core = 7.x
+package = Deploy
+project = deploy_adhoc_plan
+dependencies[] = deploy_auto_plan
