@@ -1,0 +1,43 @@
+<?php
+/**
+ * @file
+ * Ad Hoc Deployment Plans module tests.
+ */
+
+/**
+ * Test a full deployment with the ad hoc deployment functionality.
+ */
+class DeployAdhocPlanTestCase extends DeployWebTestCase {
+
+  protected $manage_add_to_plan = FALSE;
+
+  protected $origin_modules = array('entity', 'ctools', 'uuid', 'deploy', 'deploy_ui', 'deploy_auto_plan', 'deploy_adhoc_plan', 'deploy_example');
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Ad hoc deployment setup',
+      'description' => 'Test a full deployment between two sites, based on the provided example feature.',
+      'group' => 'Deployment'
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUpSiteSpecifics($key) {
+    if ($key == 'deploy_origin') {
+      variable_set('deploy_auto_plan_name', 'deploy_example_plan');
+      variable_set('deploy_adhoc_plan_name', 'deploy_example_plan');
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function testDeployment() {
+    $this->runScenario('deploy_example_plan');
+  }
+}
