@@ -8,37 +8,37 @@
  * Theme callback for a plan's content.
  */
 function theme_deploy_ui_overview_plan_content($variables) {
+  drupal_add_css(drupal_get_path('module', 'deploy_ui') . '/css/deploy_ui.admin.css');
   $info = $variables['info'];
-  $header = array(t('Title'), t('Type'));
-  $rows = array();
+
+  if (empty($info)) {
+    return t('No content in this plan.');
+  }
+
+  $status_latest = t('Latest');
+  $header = [t('Title'), t('Type'), t('Revision Status')];
+  $table = [
+    'header' => $header,
+    'rows' => [],
+    'attributes' => [
+      'class' => ['deploy-plan'],
+    ]
+  ];
 
   foreach ($info as $values) {
-    $rows[] = array($values['title'], $values['type']);
+    $fields = [$values['title'], $values['type'], $values['status']];
+    if ($values['status'] == $status_latest) {
+      $table['rows'][] = $fields;
+    }
+    else {
+      $table['rows'][] = [
+        'data' => $fields,
+        'class' => ['newer-available'],
+      ];
+    }
   }
-  if (empty($rows)) {
-    $rows = array(array(array(
-      'colspan' => 2,
-      'data' => t('Currently no content in this plan.'),
-    )));
-  }
-  return theme('table', array('header' => $header, 'rows' => $rows));
-}
 
-/**
- * Theme callback for the plan view page.
- */
-function theme_deploy_ui_plan_view($variables) {
-  drupal_add_css(drupal_get_path('module', 'deploy_ui') . '/css/deploy_ui.admin.css');
-
-  $data = $variables['data'];
-
-  return '<div class="description">'
-    . '<h4 class="element-invisible">Plan description</h4>'
-    . $data['plan_description']
-    . '</div>'
-    . '<div class="body">'
-    . $data['content']
-    . '</div>';
+  return theme('table', $table);
 }
 
 /**
