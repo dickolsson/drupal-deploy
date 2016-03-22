@@ -2,6 +2,7 @@ name = Deployment
 description = Allows content to be deployed between servers. Either to be used as a content staging solution or to deploy content across a cluster of different sites.
 package = Deployment
 core = 7.x
+php = 5.5
 
 dependencies[] = ctools
 dependencies[] = entity
