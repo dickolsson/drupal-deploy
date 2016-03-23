@@ -89,10 +89,10 @@ function deploy_ui_flatten_plan_form($form, &$form_state, $plan) {
 
   return confirm_form(
     $form,
-    t('Are you sure you want to flatten the @plan plan?', array('@plan' => $plan->title)),
+    t('Are you sure you want to remove all duplicate content from the @plan plan?', array('@plan' => $plan->title)),
     'admin/structure/deploy/plans/list/' . $plan->name,
-    t('Flattening the plan will remove all duplicated items from the plan.'),
-    t('Flatten'),
+    t('This operation will remove all older revisions from a plan so only the latest versions remain. This operation can not be undone.'),
+    t('Remove Duplicates'),
     t('Cancel')
   );
 }
@@ -105,7 +105,7 @@ function deploy_ui_flatten_plan_form_submit($form, &$form_state) {
   $plan->flatten();
 
   drupal_set_message(
-    t('The @plan plan was flattened.', array('@plan' => $plan->title))
+    t('Duplicate content has been removed from the @plan plan.', array('@plan' => $plan->title))
   );
 
   $form_state['redirect'] = 'admin/structure/deploy/plans/list/' . $plan->name;

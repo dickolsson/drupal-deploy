@@ -213,14 +213,46 @@ class DeployPlan {
 
     foreach ($entity_keys as $entity_key) {
       $entity = entity_load_single($entity_key['type'], $entity_key['id']);
-      deploy_manager_delete_from_plan($plan->name, $entity_key['type'], $entity);
+      deploy_manager_delete_from_plan($this->name, $entity_key['type'], $entity);
     }
+
+    return TRUE;
   }
 
   /**
    * Flattens a deployment plan by removing duplicated entities.
    */
   public function flatten() {
+    $max_sql = 'SELECT entity_type, entity_id, MAX(revision_id) as rev_id '
+      . 'FROM {deploy_manager_entities} '
+      . 'WHERE plan_name = :plan '
+      . 'GROUP BY entity_type, entity_id '
+      . 'HAVING COUNT(*) > 1';
+    $max_result = db_query($max_sql, [':plan' => $this->name]);
+    foreach ($max_result as $max) {
+
+      // The limitations of SQL are so much fun.
+      $sql = 'SELECT entity_type, revision_id '
+        . 'FROM {deploy_manager_entities} '
+        . 'WHERE plan_name = :plan '
+        . 'AND entity_type = :type '
+        . 'AND entity_id = :id '
+        . 'AND revision_id <> :rev_id';
+
+      $where = [
+        ':plan' => $this->name,
+        ':type' => $max->entity_type,
+        ':id' => $max->entity_id,
+        ':rev_id' => $max->rev_id,
+      ];
+
+      $purge_result = db_query($sql, $where);
+      foreach ($purge_result as $purge) {
+        $entity = entity_revision_load($purge->entity_type, $purge->revision_id);
+        deploy_manager_delete_revision_from_plan($this->name, $purge->entity_type, $entity);
+      }
+    }
+
     return TRUE;
   }
 

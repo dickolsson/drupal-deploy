@@ -17,10 +17,20 @@ function deploy_ui_menu() {
   );
 
   $items['admin/structure/deploy/plans/list/%ctools_export_ui/flatten'] = array(
-    'title' => 'Flatten',
+    'title' => 'Remove Duplicates',
     'description' => 'Remove duplicate content from the plan',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_ui_flatten_plan_form', 5),
+    'access arguments' => array('administer deployments'),
+    'file' => 'deploy_ui.pages.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  $items['admin/structure/deploy/plans/list/%ctools_export_ui/manage'] = array(
+    'title' => 'Manage',
+    'description' => 'Manage the contents of the plan',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_ui_manage_plan_form', 5),
     'access arguments' => array('administer deployments'),
     'file' => 'deploy_ui.pages.inc',
     'type' => MENU_LOCAL_ACTION,

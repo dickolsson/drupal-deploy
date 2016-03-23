@@ -80,6 +80,34 @@ function deploy_drush_command() {
     'aliases' => array('delete-plan', 'ddp'),
   );
 
+  $commands['deploy-empty-plan'] = array(
+    'description' => 'Empty a new deployment plan.',
+    'drupal dependencies' => array('deploy'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'arguments' => array(
+      'plan_name' => 'The name of the deployment plan to empty.'
+    ),
+    'required-arguments' => TRUE,
+    'examples' => array(
+      'drush deploy-empty-plan plan_name' => 'Empties plan called "plan_name".',
+    ),
+    'aliases' => array('empty-plan', 'dep'),
+  );
+
+  $commands['deploy-flatten-plan'] = array(
+    'description' => 'Flattens a new deployment plan.',
+    'drupal dependencies' => array('deploy'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'arguments' => array(
+      'plan_name' => 'The name of the deployment plan to flatten.'
+    ),
+    'required-arguments' => TRUE,
+    'examples' => array(
+      'drush deploy-flatten--plan plan_name' => 'Flattens plan called "plan_name".',
+    ),
+    'aliases' => array('flatten-plan', 'dfp'),
+  );
+
   return $commands;
 }
 
@@ -211,4 +239,40 @@ function drush_deploy_delete_plan($name) {
   else {
     drush_print(dt("Deleted plan '@name'.", array('@name' => $name)));
   }
+}
+
+/**
+ * Command callback for emptying a deployment plan.
+ */
+function drush_deploy_empty_plan($name) {
+
+  $plan = deploy_plan_load($name);
+  if (FALSE === $plan) {
+    return drush_set_error(dt("Plan '@name' doesn't exist.", array('@name' => $name)));
+  }
+
+  if (!$plan->emptyPlan()) {
+    return drush_set_error(dt("Unable to empty plan '@name' at this time.", array('@name' => $name)));
+  }
+
+  drush_print(dt("Plan '@name' has been emptied.", array('@name' => $name)));
+  return DRUSH_SUCCESS;
+}
+
+/**
+ * Command callback for flattening a deployment plan.
+ */
+function drush_deploy_flatten_plan($name) {
+
+  $plan = deploy_plan_load($name);
+  if (FALSE === $plan) {
+    return drush_set_error(dt("Plan '@name' doesn't exist.", array('@name' => $name)));
+  }
+
+  if (!$plan->flatten()) {
+    return drush_set_error(dt("Unable to flatten plan '@name' at this time.", array('@name' => $name)));
+  }
+
+  drush_print(dt("Plan '@name' has been flattened.", array('@name' => $name)));
+  return DRUSH_SUCCESS;
 }
