@@ -480,6 +480,7 @@ function deploy_log($key, $status, $message = '', $variables = array(), $timesta
         'uuid' => $key,
       ))
       ->execute();
+    return $key;
   }
   if (uuid_is_valid($key)) {
     // Add the log entry for this deployment.
