@@ -85,15 +85,6 @@ function deploy_deploy_authenticators() {
         'path' => $path,
       ),
     ),
-    'DeployAuthenticatorOAuth' => array(
-      'name' => 'oAuth',
-      'description' => 'Uses the oAuth protocol to authenticate with the endpoint. <strong>Does not work yet!</strong>',
-      'handler' => array(
-        'class' => 'DeployAuthenticatorOAuth',
-        'file' => 'DeployAuthenticatorOAuth.inc',
-        'path' => $path,
-      ),
-    ),
   );
 }
 
