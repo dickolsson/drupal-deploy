@@ -16,7 +16,7 @@ function theme_deploy_ui_overview_plan_content($variables) {
   }
 
   $status_latest = t('Latest');
-  $header = [t('Title'), t('Type'), t('Revision Status')];
+  $header = [t('Title'), t('Type'), t('Revision Status'), t('Other Plans')];
   $table = [
     'header' => $header,
     'rows' => [],
@@ -26,7 +26,7 @@ function theme_deploy_ui_overview_plan_content($variables) {
   ];
 
   foreach ($info as $values) {
-    $fields = [$values['title'], $values['type'], $values['status']];
+    $fields = [$values['title'], $values['type'], $values['status'], $values['plans']];
     if ($values['status'] == $status_latest) {
       $table['rows'][] = $fields;
     }

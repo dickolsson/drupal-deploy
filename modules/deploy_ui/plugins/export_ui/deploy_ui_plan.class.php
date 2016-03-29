@@ -351,18 +351,28 @@ class deploy_ui_plan extends ctools_export_ui {
         drupal_set_message(t('A newer revision exists for one or more items in this plan.'), 'warning', FALSE);
         $status = t('Newer Available');
       }
+
+      $plans = [];
+      $matched_plans = deploy_find_entity($entity_key['type'], $entity_key['id'], $plan->name);
+      if ($matched_plans) {
+        foreach ($matched_plans as $name => $rev) {
+          $link_label = t('@title (rev:@rev_id)', ['@title' => $name, '@rev_id' => $rev]);
+          $plans[] = l($link_label, 'admin/structure/deploy/plans/list/' . $name);
+        }
+      }
       // Construct a usable array for the theme function.
       $info[] = array(
         'title' => $title,
         'type' => $entity_info['label'],
         'status' => $status,
+        'plans' => theme('item_list', ['items' => $plans]),
       );
     }
 
     $data = [
       'content' => theme('deploy_ui_overview_plan_content', array('info' => $info)),
       'plan_description' => check_plain($plan->description),
-      't_description' => t('Plan description'),
+      'label_description' => t('Plan description'),
     ];
 
     return theme('deploy_ui_plan_view', array('vars' => $data));
@@ -390,7 +400,7 @@ class deploy_ui_plan extends ctools_export_ui {
       catch (Exception $e) {
         drupal_set_message(t('Something went wrong during the deployment. Check your logs or the status of the deployment for more information.'), 'error');
       }
-      drupal_goto('admin/structure/deploy');
+      drupal_goto('admin/structure/deploy/plans/list/' . $plan->name);
     }
 
     return $output;

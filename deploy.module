@@ -526,3 +526,38 @@ function deploy_is_latest_revision($entity_type, $entity) {
 
   return !isset($result[$entity_type]);
 }
+
+/**
+ * Looks up which plans an entity is present in.
+ *
+ * @param string $entity_type
+ *   The machine name of the entity type.
+ * @param integer $entity_id
+ *   The id for the entity.
+ * @param string $exclude
+ *   The machine of a plan to exclude from the look up. Ignored if NULL.
+ * @param integer $revision_id
+ *   The revision id to use for the lookup. All revisions are used if NULL.
+ *
+ * @return array
+ *   List of plans the entity was found in.
+ */
+function deploy_find_entity($entity_type, $entity_id, $exclude=NULL, $revision_id=NULL) {
+  $query = db_select('deploy_manager_entities', 'dme')
+    ->fields('dme', ['plan_name'])
+    ->condition('entity_type', $entity_type)
+    ->condition('entity_id', $entity_id)
+    ->groupBy('plan_name');
+
+  $query->addExpression('MAX(revision_id)', 'max_rev_id');
+
+  if ($exclude) {
+    $query->condition('plan_name', $exclude, '!=');
+  }
+
+  if ($revision_id) {
+    $query->condition('revision_id', $revision_id);
+  }
+
+  return $query->execute()->fetchAllKeyed();
+}
