@@ -18,7 +18,9 @@ class deploy_ui_plan extends ctools_export_ui {
 
     // Hack around some of the limitations of the CTools Exportable UI default implementation.
     $items['admin/structure/deploy'] = $items['admin/structure/deploy/plans'];
-    $items['admin/structure/deploy']['type'] = MENU_CALLBACK;
+    $items['admin/structure/deploy']['description'] = 'Manage deployment plans, endpoints etc.';
+    $items['admin/structure/deploy']['title'] = 'Deploy';
+    $items['admin/structure/deploy']['type'] = MENU_NORMAL_ITEM;
 
     $items['admin/structure/deploy/plans']['type'] = MENU_DEFAULT_LOCAL_TASK;
     $items['admin/structure/deploy/plans']['weight'] = -10;
