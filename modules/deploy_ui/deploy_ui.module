@@ -11,6 +11,7 @@ function deploy_ui_menu() {
     'description' => 'Remove all content from the plan',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_ui_empty_plan_form', 5),
+    'access callback' => 'deploy_ui_user_access',
     'access arguments' => array('administer deployments'),
     'file' => 'deploy_ui.pages.inc',
     'type' => MENU_LOCAL_ACTION,
@@ -21,22 +22,40 @@ function deploy_ui_menu() {
     'description' => 'Remove duplicate content from the plan',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_ui_flatten_plan_form', 5),
-    'access arguments' => array('administer deployments'),
-    'file' => 'deploy_ui.pages.inc',
-    'type' => MENU_LOCAL_ACTION,
-  );
-
-  $items['admin/structure/deploy/plans/list/%ctools_export_ui/manage'] = array(
-    'title' => 'Manage',
-    'description' => 'Manage the contents of the plan',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('deploy_ui_manage_plan_form', 5),
+    'access callback' => 'deploy_ui_user_access',
     'access arguments' => array('administer deployments'),
     'file' => 'deploy_ui.pages.inc',
     'type' => MENU_LOCAL_ACTION,
   );
 
   return $items;
+}
+
+/**
+ * Access callback handler.
+ *
+ * This is a bit of a hack to prevent actions being rendered on the VBO
+ * confirmation form.
+ *
+ * @param string $string
+ *   The permission, such as "administer nodes", being checked for.
+ * @param object $account
+ *   The account to check, if not given use currently logged in user.
+ *
+ * @return boolean
+ *   Boolean TRUE if the current user has the requested permission.
+ */
+function deploy_ui_user_access($string, $account=NULL, $deny_for_post=TRUE) {
+
+  if (!user_access($string, $account)) {
+    return FALSE;
+  }
+
+  if ('POST' == $_SERVER['REQUEST_METHOD'] && $deny_for_post && 'view' == arg(6)) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**

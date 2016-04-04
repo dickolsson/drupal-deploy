@@ -57,6 +57,28 @@ function deploy_rules_action_info() {
         ),
       ),
     ),
+    'deploy_manager_entity_remove' => array(
+      'label' => t('Remove Entity From Plan'),
+      'group' => t('Deploy'),
+      'parameter' => array(
+        'dme' => array(
+          'type' => 'deploy_manager_entities',
+          'label' => t('Entity to remove'),
+        ),
+      ),
+      'module' => 'deploy',
+    ),
+    'deploy_manager_entity_use_latest_revision' => array(
+      'label' => t('Use Latest Revision of Entity'),
+      'group' => t('Deploy'),
+      'parameter' => array(
+        'dme' => array(
+          'type' => 'deploy_manager_entities',
+          'label' => t('Entity to update'),
+        ),
+      ),
+      'module' => 'deploy',
+    ),
   );
 }
 
@@ -109,4 +131,21 @@ function deploy_manager_action_delete_from_plan($plan_name, $entity_wrapper) {
   $entity_type = $entity_wrapper->type();
   $entity = $entity_wrapper->value();
   deploy_manager_delete_from_plan($plan_name, $entity_type, $entity);
+}
+
+
+/**
+ * Action callback for the "Delete Entity From Plan" action.
+ *
+ * @param object $dme
+ *   The deploy manager entity to be deleted.
+ */
+function deploy_manager_entity_remove($dme) {
+  $label = $dme->label();
+  $dme->delete();
+  drupal_set_message(t('Entity has been removed: @label', ['@label' => $label]));
+}
+
+function deploy_manager_entity_use_latest_revision($dme) {
+  dpm($dme);
 }

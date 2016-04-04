@@ -283,6 +283,12 @@ function deploy_schema() {
   $schema['deploy_manager_entities'] = array(
     'description' => 'Holds entities to be deployed for managed plans.',
     'fields' => array(
+      'dme_id' => array(
+        'description' => 'The unique identifier for this record.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'plan_name' => array(
         'description' => 'The name of the deployment plan this item applies to.',
         'type' => 'varchar',
@@ -302,11 +308,11 @@ function deploy_schema() {
         'not null' => TRUE,
       ),
       'revision_id' => array(
+        'description' => 'The entity revision ID to be deployed.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        'description' => 'The entity revision ID to be deployed.',
       ),
       'timestamp' => array(
         'description' => 'The unix timestamp indicating when this item was added to the deployment plan.',
@@ -318,9 +324,14 @@ function deploy_schema() {
         'default' => 0,
       ),
     ),
-    'primary key' => array('plan_name', 'entity_type', 'entity_id', 'revision_id'),
+    'primary key' => array('dme_id'),
+    'unique keys' => array(
+      'record' => array('plan_name', 'entity_type', 'entity_id', 'revision_id'),
+    ),
     'indexes' => array(
       'timstamp' => array('timestamp'),
+      'entity_record' => array('entity_type', 'entity_id'),
+      'entity_revision' => array('entity_type', 'revision_id'),
     ),
   );
 
@@ -360,4 +371,32 @@ function deploy_update_7002() {
       'default' => '',
     ));
   }
+}
+
+/**
+ * Add serial primary key to deploy_manager_entities.
+ */
+function deploy_update_7003(&$sandbox) {
+  $table = 'deploy_manager_entities';
+
+  $spec = array(
+    'description' => 'The unique identifier for this record.',
+    'type' => 'serial',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+  );
+
+  $new_keys = array(
+    'primary key' => array('dme_id'),
+    'unique keys' => array(
+      'record' => array('plan_name', 'entity_type', 'entity_id', 'revision_id'),
+    ),
+    'indexes' => array(
+      'entity_record' => array('entity_type', 'entity_id'),
+      'entity_revision' => array('entity_type', 'revision_id'),
+    ),
+  );
+
+  db_drop_primary_key('deploy_manager_entities');
+  db_add_field($table, 'dme_id', $spec, $new_keys);
 }

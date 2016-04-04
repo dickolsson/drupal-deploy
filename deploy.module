@@ -64,6 +64,101 @@ function deploy_ctools_plugin_type() {
 }
 
 /**
+ * Implements hook_entity_info().
+ */
+function deploy_entity_info() {
+  return [
+    'deploy_manager_entities' => [
+      'label' => t('Deploy Manager Entity'),
+      'entity class' => 'DeployManagerEntitiesEntity',
+      'controller class' => 'EntityAPIController',
+      'base table' => 'deploy_manager_entities',
+      'entity keys' => [
+        'id' => 'dme_id',
+      ],
+      'fieldable' => FALSE,
+      'module' => 'deploy',
+      'bundles' => [
+        'deploy_manager_entities' => [
+          'label' => t('Deploy Manager Entity'),
+        ],
+      ],
+      'label callback' => 'deploy_manager_entities_label',
+      'views controller class' => 'DeployManagerEntityViewsController',
+    ]
+  ];
+}
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function deploy_entity_property_info() {
+
+  $properties = [
+    'dme_id' => [
+      'type'  => 'integer',
+      'label' => t('Deploy Manager Entity ID'),
+      'description' => t('The unique identifier for the deploy manager entity identifier.'),
+      'schema field' => 'dme_id',
+    ],
+    'plan_name' => [
+      'type' => 'text',
+      'label' => t('Plan Name'),
+      'description' => t('The machine name of the plan the entity belongs to.'),
+      'schema field' => 'plan_name',
+    ],
+    'entity_type' => [
+      'type' => 'text',
+      'label' => t('Entity Type'),
+      'description' => t('The type of entity.'),
+      'schema field' => 'entity_type',
+    ],
+    'entity_id' => [
+      'type' => 'integer',
+      'label' => t('Entity ID'),
+      'description' => t('The primary identifier for the entity.'),
+      'schema field' => 'entity_id',
+    ],
+    'revision_id' => [
+      'type' => 'integer',
+      'label' => t('Revision ID'),
+      'description' => t('The revision identifier.'),
+      'schema field' => 'revision_id',
+    ],
+    'timestamp' => [
+      'type' => 'date',
+      'label' => t('Added'),
+      'description' => t('The date and time when the entity was added to the plan'),
+      'schema field' => 'timestamp',
+    ],
+  ];
+
+  $info = ['deploy_manager_entities' => ['properties' => $properties]];
+  return $info;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function deploy_views_api() {
+  return [
+    'api' => 3,
+    'path' => drupal_get_path('module', 'deploy') . '/includes',
+  ];
+}
+
+/**
+ * Implements deploy_auto_plan_status_alter().
+ */
+function deploy_deploy_auto_plan_status_alter(&$status, $entity, $type) {
+
+  // We don't want to add the Deploy Manager Entities to a deployment plan.
+  if ('deploy_manager_entities' == $type) {
+    $status = FALSE;
+  }
+}
+
+/**
  * Get all aggregator plugins.
  */
 function deploy_get_aggregator_plugins() {
@@ -504,6 +599,17 @@ function deploy_log($key, $status, $message = '', $variables = array(), $timesta
   return FALSE;
 }
 
+/**
+ * Checks if the entity is the latest revision.
+ *
+ * @param string $entity_type
+ *   The machine name of the entity type.
+ * @param object $entity
+ *   The entity object to use for the look up.
+ *
+ * @return bool
+ *   Is the supplied entity the latest revision.
+ */
 function deploy_is_latest_revision($entity_type, $entity) {
   $entity_info = &drupal_static(__FUNCTION__);
   if (empty($entity_info[$entity_type])) {
@@ -524,7 +630,7 @@ function deploy_is_latest_revision($entity_type, $entity) {
     ->entityCondition('revision_id', $entity->{$info['entity keys']['revision']}, '>')
     ->execute();
 
-  return !isset($result[$entity_type]);
+  return empty($result[$entity_type]);
 }
 
 /**
@@ -560,4 +666,62 @@ function deploy_find_entity($entity_type, $entity_id, $exclude=NULL, $revision_i
   }
 
   return $query->execute()->fetchAllKeyed();
+}
+
+/**
+ * Entity label callback.
+ */
+function deploy_manager_entities_label($entity, $entity_type) {
+  $plan_entity = deploy_plan_entity_load($entity->entity_type, $entity->entity_id, $entity->revision_id);
+  return deploy_plan_entity_label($entity->entity_type, $plan_entity, $entity->revision_id);
+}
+
+/**
+ * Loads an entity that is included in a deployment plan.
+ *
+ * @param string $type
+ *   The type of entity included in a plan.
+ * @param int $id
+ *   The identifier for the entity in the plan.
+ * @param int $rev
+ *   The revision identifier for the entity in the plan.
+ *
+ * @return object
+ *   The entity object.
+ */
+function deploy_plan_entity_load($type, $id, $rev = NULL) {
+  if (empty($rev)) {
+    $entity = entity_load_single($type, $id);
+  }
+  else {
+    $entity = entity_revision_load($type, $rev);
+  }
+
+  return $entity;
+}
+
+/**
+ * Load an entity and generates the label for it.
+ *
+ * @param string $type
+ *   The type of entity included in the plan.
+ * @param object $entity
+ *   The entity that's included in the plan.
+ * @param int $rev
+ *   The revision identifier for the entity in the plan.
+ *
+ * @return string
+ *   The label for the entity.
+ */
+function deploy_plan_entity_label($type, $entity, $rev = NULL) {
+  $label = entity_label($type, $entity);
+
+  if (empty($rev)) {
+    $full_label = t('@entity_label', ['@entity_label' => $label]);
+  }
+  else {
+    $full_label = t('@entity_label [rev:@rev]', ['@entity_label' => $label, '@rev' => $rev]);
+  }
+
+  return $full_label;
 }

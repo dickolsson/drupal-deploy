@@ -302,14 +302,20 @@ class deploy_ui_plan extends ctools_export_ui {
    * Renders the view deployment plan page.
    */
   function view_page($js, $input, $plan) {
-    menu_set_active_item(ctools_export_ui_plugin_base_path($this->plugin) . "/list/{$plan->name}/view");
     drupal_set_title(t('Plan: @plan', array('@plan' => $plan->name)), PASS_THROUGH);
-
 
     $status = deploy_plan_get_status($plan->name);
     $status_info = deploy_status_info($status);
     if ($status_info) {
-      drupal_set_message(t($status_info['keyed message'], ['%key' => $plan->name]), $status_info['class']);
+      drupal_set_message(t($status_info['keyed message'], ['%key' => $plan->name]), $status_info['class'], FALSE);
+    }
+
+    // For managed entity plans we use a view to provide additional
+    // functionality.
+    if ('DeployAggregatorManaged' == $plan->aggregator_plugin
+      && module_exists('views_bulk_operations')) {
+
+      return views_embed_view('deploy_managed_entities', 'list_block');
     }
 
     $info = [];
@@ -318,56 +324,25 @@ class deploy_ui_plan extends ctools_export_ui {
     foreach ($entity_keys as $entity_key) {
       // Get the entity info and all entities of this type.
       $entity_info = entity_get_info($entity_key['type']);
-
-      if (!empty($entity_info['entity keys']['revision']) && !empty($entity_key['revision_id'])) {
-        $entity = entity_revision_load($entity_key['type'], $entity_key['revision_id']);
-      }
-      else {
-        $entity = entity_load_single($entity_key['type'], $entity_key['id']);
-      }
-
-      $title = "{$entity_key['type']}:{$entity_key['id']}";
-      $label = entity_label($entity_key['type'], $entity);
-      if ($label) {
-        $title = $label;
-      }
-
-      if ($entity_info['entity keys']['revision'] && !empty($entity_key['revision_id'])) {
-        $title = t('@title (rev:@rev_id)', array('@title' => $title, '@rev_id' => $entity_key['revision_id']));
-      }
+      $entity = deploy_plan_entity_load($entity_key['type'], $entity_key['id'], $entity_key['revision_id']);
+      $label = deploy_plan_entity_label($entity_key['type'], $entity, $entity_key['revision_id']);
 
       // Some entities fail fatally with entity_uri() and
       // entity_extract_ids(). So handle this gracefully.
       try {
         $uri = entity_uri($entity_key['type'], $entity);
         if ($uri) {
-          $title = l($title, $uri['path'], $uri['options']);
+          $label = l($label, $uri['path'], $uri['options']);
         }
       }
       catch (Exception $e) {
         watchdog_exception('deploy_ui', $e);
       }
 
-      $status = t('Latest');
-      if (!deploy_is_latest_revision($entity_key['type'], $entity)) {
-        drupal_set_message(t('A newer revision exists for one or more items in this plan.'), 'warning', FALSE);
-        $status = t('Newer Available');
-      }
-
-      $plans = [];
-      $matched_plans = deploy_find_entity($entity_key['type'], $entity_key['id'], $plan->name);
-      if ($matched_plans) {
-        foreach ($matched_plans as $name => $rev) {
-          $link_label = t('@title (rev:@rev_id)', ['@title' => $name, '@rev_id' => $rev]);
-          $plans[] = l($link_label, 'admin/structure/deploy/plans/list/' . $name);
-        }
-      }
       // Construct a usable array for the theme function.
       $info[] = array(
-        'title' => $title,
+        'title' => $label,
         'type' => $entity_info['label'],
-        'status' => $status,
-        'plans' => theme('item_list', ['items' => $plans]),
       );
     }
 
