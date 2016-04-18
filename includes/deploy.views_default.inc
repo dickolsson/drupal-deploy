@@ -103,6 +103,13 @@ function deploy_views_default_views() {
       'override_label' => 0,
       'label' => '',
     ),
+    'rules_component::rules_use_latest_revision_of_entity' => array(
+      'selected' => 1,
+      'postpone_processing' => 0,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'label' => '',
+    ),
   );
   /* Field: Deploy Manager Entity: Entity Type Label */
   $handler->display->display_options['fields']['entity_type_label']['id'] = 'entity_type_label';

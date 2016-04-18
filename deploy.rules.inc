@@ -74,7 +74,7 @@ function deploy_rules_action_info() {
       'parameter' => array(
         'dme' => array(
           'type' => 'deploy_manager_entities',
-          'label' => t('Entity to update'),
+          'label' => t('Plan Entity to update'),
         ),
       ),
       'module' => 'deploy',
@@ -146,6 +146,34 @@ function deploy_manager_entity_remove($dme) {
   drupal_set_message(t('Entity has been removed: @label', ['@label' => $label]));
 }
 
+/**
+ * Action callback for the "Use Latest Revision of Entity" action.
+ */
 function deploy_manager_entity_use_latest_revision($dme) {
-  dpm($dme);
+
+  // We can't do anything about an entity without a revision.
+  if (!$dme->revision_id) {
+    return;
+  }
+
+  $entity = entity_load_single($dme->entity_type, $dme->entity_id);
+  list($id, $vid, $bundle) = entity_extract_ids($dme->entity_type, $entity);
+  if ($dme->revision_id == $vid) {
+    // Already at the latest revision, nothing for us to do.
+    $label = entity_label('deploy_manager_entities', $dme);
+    drupal_set_message(t('@label already at latest revision', ['@label' => $label]), 'warning');
+    return;
+  }
+
+  $label = entity_label($dme->entity_type, $entity);
+  $plans = deploy_find_entity($dme->entity_type, $id, $vid);
+  if (isset($plans[$dme->plan_name]) && $plans[$dme->plan_name] == $vid) {
+    $dme->delete();
+    drupal_set_message(t('@label [@rev_id] already exists. Removing old version.', ['@label' => $label, '@rev_id' => $vid]));
+    return;
+  }
+
+  $dme->revision_id = $vid;
+  $dme->save();
+  drupal_set_message(t('Updated @label to @rev_id', ['@label' => $label, '@rev_id' => $vid]));
 }
