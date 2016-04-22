@@ -389,7 +389,7 @@ class deploy_ui_plan extends ctools_export_ui {
  */
 function deploy_ui_plan_confirm_form($form, $form_state) {
   $plan = $form_state['plan'];
-  $path = 'admin/structure/deploy/plans';
+  $path = "admin/structure/deploy/plans/list/{$plan->name}";
   if (!empty($_REQUEST['cancel_path']) && !url_is_external($_REQUEST['cancel_path'])) {
     $path = $_REQUEST['cancel_path'];
   }
