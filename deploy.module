@@ -83,7 +83,7 @@ function deploy_ctools_plugin_type() {
  * Implements hook_entity_info().
  */
 function deploy_entity_info() {
-  return [
+  $info = [
     'deploy_manager_entities' => [
       'label' => t('Deploy Manager Entity'),
       'entity class' => 'DeployManagerEntitiesEntity',
@@ -104,6 +104,14 @@ function deploy_entity_info() {
       'views controller class' => 'DeployManagerEntityViewsController',
     ]
   ];
+
+  // We can only use entity cache if it is enabled.
+  if (module_exists('entitycache')) {
+    $info['deploy_manager_entities']['entity cache'] = TRUE;
+  }
+
+  return $info;
+
 }
 
 /**
