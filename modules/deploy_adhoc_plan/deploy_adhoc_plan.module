@@ -72,7 +72,7 @@ function deploy_adhoc_plan_settings($form, $form_state) {
 
   if (!count($plans)) {
     $msg = t('No deployment plans configured.');
-    if (module_exists('deploy_ui') && user_access('administer deployments')) {
+    if (module_exists('deploy_ui') && user_access('administer deployment plans')) {
       $url = url('admin/structure/deploy/plans');
       $msg = t('No deployment plans configured. <a href="!url">Add a plan</a>.', array('!url' => $url));
     }

@@ -12,7 +12,7 @@ function deploy_ui_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_ui_empty_plan_form', 5),
     'access callback' => 'deploy_ui_user_access',
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('edit deployment plans'),
     'file' => 'deploy_ui.pages.inc',
     'type' => MENU_LOCAL_ACTION,
   );
@@ -23,7 +23,7 @@ function deploy_ui_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_ui_flatten_plan_form', 5),
     'access callback' => 'deploy_ui_user_access',
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('edit deployment plans'),
     'file' => 'deploy_ui.pages.inc',
     'type' => MENU_LOCAL_ACTION,
   );

@@ -6,7 +6,7 @@
 
 $plugin = array(
   'schema' => 'deploy_endpoints',
-  'access' => 'administer deployments',
+  'access' => 'administer deployment endpoints',
 
   'menu' => array(
     'menu prefix' => 'admin/structure/deploy',

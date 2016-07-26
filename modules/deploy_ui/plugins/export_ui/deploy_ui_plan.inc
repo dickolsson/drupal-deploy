@@ -6,22 +6,18 @@
 
 $plugin = array(
   'schema' => 'deploy_plans',
-  'access' => 'administer deployments',
+  'access' => 'administer deployment plans',
 
   'menu' => array(
     'menu prefix' => 'admin/structure/deploy',
     'menu item' => 'plans',
     'menu title' => 'Plans',
     'items' => array(
-      // TODO: Is there a simpler way to do add this page callback natively as
-      // an allowed option in CTools? It's a nightmare to follow for developers.
       'view' => array(
         'path' => 'list/%ctools_export_ui/view',
         'title' => 'View',
         'page callback' => 'ctools_export_ui_switcher_page',
         'page arguments' => array('deploy_ui_plan', 'view', 5),
-        'access callback' => 'ctools_export_ui_task_access',
-        'access arguments' => array('deploy_ui_plan', 'view', 5),
         'type' => MENU_LOCAL_TASK,
         'weight' => -99,
       ),
@@ -30,8 +26,8 @@ $plugin = array(
         'title' => 'Deploy',
         'page callback' => 'ctools_export_ui_switcher_page',
         'page arguments' => array('deploy_ui_plan', 'deploy', 5),
-        'access callback' => 'deploy_ui_user_access',
-        'access arguments' => array('administer deployments'),
+        'access callback' => 'ctools_export_ui_task_access',
+        'access arguments' => array('deploy_ui_plan', 'deploy', 5),
         'type' => MENU_LOCAL_ACTION,
       ),
     ),

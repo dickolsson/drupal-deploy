@@ -28,9 +28,25 @@ define('DEPLOY_STATUS_PUBLISHED', 4);
  */
 function deploy_permission() {
   return array(
-    'administer deployments' => array(
-      'title' => t('Administer deployments'),
-      'description' => t('Perform administrative tasks around deployments, like plans and endpoints.'),
+    'administer deployment plans' => array(
+      'title' => t('Administer deployment plans'),
+      'description' => t('Perform administrative tasks on deployment plans.'),
+    ),
+    'administer deployment endpoints' => array(
+      'title' => t('Administer deployment endpoints'),
+      'description' => t('Perform administrative on deployment endpoints.'),
+    ),
+    'deploy deployment plans' => array(
+      'title' => t('Deploy deployment plans'),
+      'description' => t('Deploy the contents of deployment plans.'),
+    ),
+    'edit deployment plans' => array(
+      'title' => t('Edit deployment plans'),
+      'description' => t('Edit the contents of deployment plans.'),
+    ),
+    'view deployment plans' => array(
+      'title' => t('View deployment plans'),
+      'description' => t('View details and contents of deployment plans.'),
     ),
   );
 }
@@ -83,6 +99,7 @@ function deploy_entity_info() {
           'label' => t('Deploy Manager Entity'),
         ],
       ],
+      'access callback' => 'deploy_access',
       'label callback' => 'deploy_manager_entities_label',
       'views controller class' => 'DeployManagerEntityViewsController',
     ]
@@ -220,6 +237,48 @@ function deploy_get_service_plugins() {
 function deploy_get_service_plugin($name) {
   ctools_include('plugins');
   return ctools_get_plugins('deploy', 'services', $name);
+}
+
+/**
+ * Access callback.
+ *
+ * @param string $op
+ *   The operation to be performed.
+ * @param object $entity
+ *   The entity the action is to be performed on.
+ * @param object $account
+ *   The user account wishing to perform the action.
+ *
+ * @return bool
+ *   TRUE if the user can perform the requested action.
+ */
+function deploy_access($op, $entity = NULL, $account = NULL) {
+
+  if (user_access('administer deployment plans', $account)) {
+    return TRUE;
+  }
+
+  switch ($op) {
+
+    case 'deploy':
+      $permission = 'deploy deployment plans';
+      break;
+
+    case 'edit':
+      $permission = 'edit deployment plans';
+      break;
+
+    case 'list':
+    case 'view':
+      $permission = 'view deployment plans';
+      break;
+
+    default:
+      $permission = 'administer deployment plans';
+      break;
+  }
+
+  return user_access($permission, $account);
 }
 
 /**

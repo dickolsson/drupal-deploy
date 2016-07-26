@@ -16,7 +16,7 @@ function deploy_services_services_resources() {
     'file' => array('type' => 'inc', 'module' => 'deploy', 'name' => 'deploy.services'),
     // TODO add support for args
     'args' => array(),
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('administer deployment plans'),
   );
 
   $resources['deploy']['create'] = array(
@@ -32,7 +32,7 @@ function deploy_services_services_resources() {
         'optional' => FALSE,
       ),
     ),
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('administer deployment plans'),
   );
 
   $resources['deploy']['retrieve'] = array(
@@ -48,7 +48,7 @@ function deploy_services_services_resources() {
         'optional' => FALSE,
       ),
     ),
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('view deployment plans'),
   );
 
   $resources['deploy']['update'] = array(
@@ -70,7 +70,7 @@ function deploy_services_services_resources() {
         'type' => 'array',
       ),
     ),
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('administer deployment plans'),
   );
 
   $resources['deploy']['targeted_actions'] = array();
@@ -87,7 +87,7 @@ function deploy_services_services_resources() {
         'optional' => FALSE,
       ),
     ),
-    'access arguments' => array('administer deployments'),
+    'access arguments' => array('deploy deployment plans'),
   );
 
   $resources['deploy']['targeted_actions']['diff'] = array(
@@ -103,7 +103,7 @@ function deploy_services_services_resources() {
         'optional' => FALSE,
       ),
     ),
-    'access arguments' => array('diff deployment plans'),
+    'access arguments' => array('view deployment plans'),
   );
 
   return $resources;

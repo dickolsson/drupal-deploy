@@ -45,6 +45,13 @@ class deploy_ui_plan extends ctools_export_ui {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  function access($op, $item) {
+    return deploy_access($op);
+  }
+
+  /**
    * Form callback for basic config.
    */
   function edit_form(&$form, &$form_state) {
@@ -313,7 +320,8 @@ class deploy_ui_plan extends ctools_export_ui {
     // For managed entity plans we use a view to provide additional
     // functionality.
     if ('DeployAggregatorManaged' == $plan->aggregator_plugin
-      && module_exists('views_bulk_operations')) {
+      && module_exists('views_bulk_operations')
+      && views_get_view('deploy_managed_entities')) {
 
       return views_embed_view('deploy_managed_entities', 'list_block');
     }
