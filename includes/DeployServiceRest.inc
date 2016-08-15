@@ -37,6 +37,7 @@ class DeployServiceRest implements DeployService {
       'url' => '',
       'headers' => array(),
       'context' => $this->fetchContext(),
+      'timeout' => 30.0,
     );
     $this->config = array_merge($this->config, $config);
   }
@@ -61,6 +62,7 @@ class DeployServiceRest implements DeployService {
       'headers' => $this->config['headers'],
       'data' => $data,
       'context' => $this->config['context'],
+      'timeout' => (float) $this->config['timeout'],
     );
 
     if ($this->config['debug']) {
@@ -90,6 +92,12 @@ class DeployServiceRest implements DeployService {
         '#title' => t('Endpoint URL'),
         '#description' => t('Enter endpoint URL. Example: %url', array('%url' => 'http://example.com/api')),
         '#default_value' => $this->config['url'],
+      ),
+      'timeout' => array(
+        '#type' => 'textfield',
+        '#title' => t('Timeout in seconds'),
+        '#description' => t('A float representing the maximum number of seconds the function call may take. The default is 30 seconds. Note: Change for large data transfers only.'),
+        '#default_value' => !empty($this->config['timeout']) ? $this->config['timeout'] : 30.0,
       ),
     );
   }
