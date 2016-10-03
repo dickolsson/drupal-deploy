@@ -2,7 +2,6 @@
 
 namespace Drupal\deploy\Form;
 
-
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -46,7 +45,7 @@ class ReplicationActionForm extends FormBase {
         $entity->get('source')->entity,
         $entity->get('target')->entity
       );
-    if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
+    if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value === TRUE)) {
       $entity->set('replicated', REQUEST_TIME)->save();
       drupal_set_message('Successful deployment.');
     }

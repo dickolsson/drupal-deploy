@@ -99,7 +99,7 @@ class ReplicationForm extends ContentEntityForm {
         $this->entity->get('target')->entity
       );
 
-      if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
+      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value === TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
         drupal_set_message('Successful deployment.');
       }
