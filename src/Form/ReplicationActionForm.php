@@ -11,7 +11,7 @@ use Drupal\workspace\Entity\Replication;
 class ReplicationActionForm extends FormBase {
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity = $this->getEntity($form_state);
@@ -29,14 +29,14 @@ class ReplicationActionForm extends FormBase {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getFormId() {
     return 'replication_action';
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $entity = $this->getEntity($form_state);
@@ -45,12 +45,12 @@ class ReplicationActionForm extends FormBase {
         $entity->get('source')->entity,
         $entity->get('target')->entity
       );
-    if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value === TRUE)) {
+    if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
       $entity->set('replicated', REQUEST_TIME)->save();
       drupal_set_message('Successful deployment.');
     }
     else {
-      drupal_set_message('Deployment error', 'error');
+      drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
     }
   }
 

@@ -4,13 +4,9 @@ namespace Drupal\deploy\Entity\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\HtmlCommand;
 use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element\Form;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
@@ -29,7 +25,7 @@ class ReplicationForm extends ContentEntityForm {
   /** @var  WorkspacePointerInterface */
   protected $target = null;
 
-  public function addTitle(RouteMatchInterface $route_match, EntityInterface $_entity = NULL) {
+  public function addTitle() {
     $this->setEntity(Replication::create());
     if (!$this->getDefaultSource() || !$this->getDefaultTarget()) {
       return $this->t('Error');
@@ -99,12 +95,12 @@ class ReplicationForm extends ContentEntityForm {
         $this->entity->get('target')->entity
       );
 
-      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value === TRUE)) {
+      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
         drupal_set_message('Successful deployment.');
       }
       else {
-        drupal_set_message('Deployment error', 'error');
+        drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
       }
     }
     catch(\Exception $e) {
@@ -118,11 +114,9 @@ class ReplicationForm extends ContentEntityForm {
   }
 
   /**
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
    * @return \Drupal\Core\Ajax\AjaxResponse
    */
-  public function deploy(array $form, FormStateInterface $form_state) {
+  public function deploy() {
     $response = new AjaxResponse();
     $response->addCommand(new CloseModalDialogCommand());
     $status_messages = ['#type' => 'status_messages'];
@@ -139,7 +133,7 @@ class ReplicationForm extends ContentEntityForm {
       return $this->source = $this->entity->get('source')->entity;
     }
 
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; * */
+    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
     $workspace_pointers = \Drupal::service('entity_type.manager')
       ->getStorage('workspace_pointer')
@@ -156,7 +150,7 @@ class ReplicationForm extends ContentEntityForm {
       return $this->target = $this->entity->get('target')->entity;
     }
 
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; * */
+    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
     return $this->target = $workspace->get('upstream')->entity;
   }
