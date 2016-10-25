@@ -7,6 +7,7 @@ use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
@@ -55,6 +56,39 @@ class ReplicationForm extends ContentEntityForm {
       return [];
     }
 
+    // @todo Move this to be injected.
+    $this->conflictTracker = \Drupal::service('workspace.conflict_tracker');
+
+    // Allow the user to not abort on conflicts.
+    $source_workspace = $this->getDefaultSource()->getWorkspace();
+    $target_workspace = $this->getDefaultTarget()->getWorkspace();
+    $conflicts = $this->conflictTracker
+      ->useWorkspace($source_workspace)
+      ->getAll();
+    if ($conflicts) {
+      $form['message'] = $this->generateMessageRenderArray('error', $this->t(
+        'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with       caution.',
+        [
+          '@count' => count($conflicts),
+          ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $source_workspace->id()])->toString(),
+          ':target' => $target_workspace->label(),
+        ]
+      ));
+      $form['is_aborted_on_conflict'] = [
+        '#type' => 'radios',
+        '#title' => $this->t('Abort if there are conflicts?'),
+        '#default_value' => 'true',
+        '#options' => [
+          'true' => $this->t('Yes, if conflicts are found do not replicate to upstream.'),
+          'false' => $this->t('No, go ahead and push any conflicts to the upstream.'),
+        ],
+        '#weight' => 0,
+      ];
+    }
+    else {
+      $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
+    }
+
     $form['source']['widget']['#default_value'] = [$this->getDefaultSource()->id()];
 
     if (empty($this->entity->get('target')->target_id) && $this->getDefaultTarget()) {
@@ -84,6 +118,13 @@ class ReplicationForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    // Pass the abort flag to the ReplicationManager using runtime-only state,
+    // i.e. a static.
+    // @see \Drupal\workspace\ReplicatorManager
+	  // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+    $is_aborted_on_conflict = !$form_state->hasValue('is_aborted_on_conflict') || $form_state->getValue('is_aborted_on_conflict') === 'true';
+    drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
+
     parent::save($form, $form_state);
 
     $input = $form_state->getUserInput();
@@ -153,6 +194,28 @@ class ReplicationForm extends ContentEntityForm {
     /** @var \Drupal\multiversion\Entity\Workspace $workspace ; */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
     return $this->target = $workspace->get('upstream')->entity;
+  }
+
+  /**
+   * Generate a message render array with the given text.
+   *
+   * @param string $type
+   *   The type of message: status, warning, or error.
+   * @param string $message
+   *   The message to create with.
+   *
+   * @return array
+   *   The render array for a status message.
+   *
+   * @see \Drupal\Core\Render\Element\StatusMessages
+   */
+  protected function generateMessageRenderArray($type, $message) {
+    return [
+      '#theme' => 'status_messages',
+      '#message_list' => [
+        $type => [Markup::create($message)],
+      ],
+    ];
   }
 
 }
