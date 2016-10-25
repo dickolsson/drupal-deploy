@@ -12,8 +12,6 @@ env:
   - MAKE_FILE=drupal-8.2.x.make.yml
 
 matrix:
-  allow_failures:
-    - env: MAKE_FILE=drupal-8.2.x.make.yml
   fast_finish: true
 
 services:
