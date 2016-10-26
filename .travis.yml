@@ -10,8 +10,11 @@ php:
 env:
   - MAKE_FILE=drupal-8.1.x.make.yml
   - MAKE_FILE=drupal-8.2.x.make.yml
+  - MAKE_FILE=drupal-8.3.x.make.yml
 
 matrix:
+  allow_failures:
+    - env: MAKE_FILE=drupal-8.3.x.make.yml
   fast_finish: true
 
 services:
