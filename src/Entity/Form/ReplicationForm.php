@@ -46,7 +46,9 @@ class ReplicationForm extends ContentEntityForm {
 
     $form = parent::buildForm($form, $form_state);
 
-    if (!$this->getDefaultSource() || !$this->getDefaultTarget()) {
+    $default_source = $this->getDefaultSource();
+    $default_target = $this->getDefaultTarget();
+    if (!$default_source || !$default_target) {
       $message = 'Source and target must be set, make sure your current workspace has an upstream. Go to <a href=":path">this page</a> to edit your workspaces.';
       $message = $this->t($message, [':path' => Url::fromRoute('entity.workspace.collection')->toString()]);
       if ($js) {
@@ -60,18 +62,17 @@ class ReplicationForm extends ContentEntityForm {
     $this->conflictTracker = \Drupal::service('workspace.conflict_tracker');
 
     // Allow the user to not abort on conflicts.
-    $source_workspace = $this->getDefaultSource()->getWorkspace();
-    $target_workspace = $this->getDefaultTarget()->getWorkspace();
+    $source_workspace = $default_source->getWorkspace();
     $conflicts = $this->conflictTracker
       ->useWorkspace($source_workspace)
       ->getAll();
     if ($conflicts) {
       $form['message'] = $this->generateMessageRenderArray('error', $this->t(
-        'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with       caution.',
+        'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with caution.',
         [
           '@count' => count($conflicts),
           ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $source_workspace->id()])->toString(),
-          ':target' => $target_workspace->label(),
+          ':target' => $default_target->label(),
         ]
       ));
       $form['is_aborted_on_conflict'] = [
@@ -89,14 +90,14 @@ class ReplicationForm extends ContentEntityForm {
       $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
     }
 
-    $form['source']['widget']['#default_value'] = [$this->getDefaultSource()->id()];
+    $form['source']['widget']['#default_value'] = [$default_source->id()];
 
-    if (empty($this->entity->get('target')->target_id) && $this->getDefaultTarget()) {
-      $form['target']['widget']['#default_value'] = [$this->getDefaultTarget()->id()];
+    if (empty($this->entity->get('target')->target_id) && $default_target) {
+      $form['target']['widget']['#default_value'] = [$default_target->id()];
     }
 
     if (!$form['source']['#access'] && !$form['target']['#access']) {
-      $form['actions']['submit']['#value'] = $this->t('Deploy to @target', ['@target' => $this->getDefaultTarget()->label()]);
+      $form['actions']['submit']['#value'] = $this->t('Deploy to @target', ['@target' => $default_target->label()]);
     }
     else {
       $form['actions']['submit']['#value'] = $this->t('Deploy');
