@@ -15,11 +15,11 @@ class ReplicationViewsData extends EntityViewsData implements EntityViewsDataInt
   public function getViewsData() {
     $data = parent::getViewsData();
 
-    $data['replication']['table']['base'] = array(
+    $data['replication']['table']['base'] = [
       'field' => 'id',
       'title' => $this->t('Deployment'),
       'help' => $this->t('The Replication ID.'),
-    );
+    ];
 
     return $data;
   }

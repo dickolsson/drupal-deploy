@@ -111,10 +111,10 @@ class ReplicationActionForm extends FormBase {
       $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
     }
 
-    $form['submit'] = array(
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => $entity->get('replicated')->value ? $this->t('Re-deploy') : $this->t('Deploy'),
-    );
+    ];
     return $form;
   }
 
