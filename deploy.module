@@ -13,30 +13,34 @@ use Drupal\Core\Url;
 function deploy_toolbar() {
   $items = [];
 
-  $items['deploy'] = [
-    '#type' => 'toolbar_item',
-     'tab' => [
-       '#type' => 'link',
-       '#title' => t('Deploy'),
-       '#url' => Url::fromRoute('entity.replication.add_form'),
-       '#attributes' => [
-         'title' => t('Deploy'),
-         'class' => ['toolbar-icon', 'toolbar-icon-deploy', 'use-ajax'],
-         'data-dialog-type' => 'modal',
-         'data-dialog-options' => json_encode([
-           'width' => '50%',
-         ])
-       ],
-     ],
-    '#wrapper_attributes' => [
-      'class' => ['deploy-toolbar-tab'],
-    ],
-     '#attached' => [
-       'library' => [
-         'deploy/drupal.deploy.toolbar',
-       ],
-     ],
-  ];
+  $user = \Drupal::currentUser();
+  $deploy_access = $user->hasPermission('administer deployments');
+  if ($deploy_access) {
+    $items['deploy'] = [
+      '#type' => 'toolbar_item',
+      'tab' => [
+        '#type' => 'link',
+        '#title' => t('Deploy'),
+        '#url' => Url::fromRoute('entity.replication.add_form'),
+        '#attributes' => [
+          'title' => t('Deploy'),
+          'class' => ['toolbar-icon', 'toolbar-icon-deploy', 'use-ajax'],
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => json_encode([
+            'width' => '50%',
+          ]),
+        ],
+      ],
+      '#wrapper_attributes' => [
+        'class' => ['deploy-toolbar-tab'],
+      ],
+      '#attached' => [
+        'library' => [
+          'deploy/drupal.deploy.toolbar',
+        ],
+      ],
+    ];
+  }
 
   return $items;
 }
