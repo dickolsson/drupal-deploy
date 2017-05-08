@@ -3,9 +3,9 @@ sudo: false
 language: php
 
 php:
-  - 5.5
   - 5.6
   - 7.0
+  - 7.1
 
 env:
   - MAKE_FILE=drupal-8.1.x.make.yml
@@ -14,7 +14,7 @@ env:
 
 matrix:
   allow_failures:
-    - env: MAKE_FILE=drupal-8.3.x.make.yml
+    - env: MAKE_FILE=drupal-8.1.x.make.yml
   fast_finish: true
 
 services:
