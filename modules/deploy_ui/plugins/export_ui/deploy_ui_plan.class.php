@@ -79,7 +79,13 @@ class deploy_ui_plan extends ctools_export_ui {
       '#title' => t('Description'),
       '#default_value' => $item->description,
     );
-    $form['debug'] = array(
+    $form['plan_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Deploy plan settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['plan_settings']['debug'] = array(
       '#type' => 'checkbox',
       '#title' => t('Debug mode'),
       '#description' => t('Check this to enable debug mode with extended watchdog logging.'),
@@ -95,7 +101,7 @@ class deploy_ui_plan extends ctools_export_ui {
         'description' => $aggregator['description'],
       );
     }
-    $form['aggregator_plugin'] = array(
+    $form['plan_settings']['aggregator_plugin'] = array(
       '#prefix' => '<label>' . t('Aggregator') . '</label>',
       '#type' => 'tableselect',
       '#required' => TRUE,
@@ -105,18 +111,18 @@ class deploy_ui_plan extends ctools_export_ui {
         'description' => t('Description'),
       ),
       '#options' => $options,
-      '#default_value' => $item->aggregator_plugin,
+      '#default_value' => !empty($item->aggregator_plugin) ? $item->aggregator_plugin : array_keys($options)[0],
     );
 
     // Fetch options.
-    $form['fetch_only'] = array(
+    $form['plan_settings']['fetch_only'] = array(
       '#title' => t('Fetch only'),
       '#description' => t("Select this if the content of this plan is intended to be <em>fetch-only</em> by any type of event or endpoint. This means that the plan wont have a processor or defined endpoint."),
       '#type' => 'checkbox',
       '#default_value' => $item->fetch_only,
     );
 
-    $form['deployment_process'] = array(
+    $form['plan_settings']['deployment_process'] = array(
       '#type' => 'fieldset',
       '#title' => t('Deployment process'),
       '#description' => t('Configure how the deployment process should behave.'),
@@ -137,7 +143,7 @@ class deploy_ui_plan extends ctools_export_ui {
       );
     }
 
-    $form['deployment_process']['processor_plugin'] = array(
+    $form['plan_settings']['deployment_process']['processor_plugin'] = array(
       '#prefix' => '<label>' . t('Processor') . '</label>',
       '#type' => 'tableselect',
       '#required' => FALSE,
@@ -147,7 +153,7 @@ class deploy_ui_plan extends ctools_export_ui {
         'description' => t('Description'),
       ),
       '#options' => $options,
-      '#default_value' => $item->processor_plugin,
+      '#default_value' => !empty($item->processor_plugin) ? $item->processor_plugin : array_keys($options)[0],
     );
 
     // Endpoints.
@@ -162,7 +168,7 @@ class deploy_ui_plan extends ctools_export_ui {
     if (!is_array($item->endpoints)) {
       $item->endpoints = unserialize($item->endpoints);
     }
-    $form['deployment_process']['endpoints'] = array(
+    $form['plan_settings']['deployment_process']['endpoints'] = array(
       '#prefix' => '<label>' . t('Endpoints') . '</label>',
       '#type' => 'tableselect',
       '#required' => FALSE,
@@ -177,7 +183,7 @@ class deploy_ui_plan extends ctools_export_ui {
     );
 
     // Dependency plugin.
-    $form['dependency_iterator'] = array(
+    $form['plan_settings']['dependency_iterator'] = array(
       '#type' => 'fieldset',
       '#title' => t('Dependency plugin'),
       '#description' => t('The iterator to handle the dependencies of the deployment plan'),
@@ -185,7 +191,7 @@ class deploy_ui_plan extends ctools_export_ui {
       '#collapsed' => FALSE,
     );
 
-    $form['dependency_iterator']['dependency_plugin'] = array(
+    $form['plan_settings']['dependency_iterator']['dependency_plugin'] = array(
       '#type' => 'select',
       '#title' => t('Plugin'),
       '#options' => entity_dependency_get_all_ctools_plugins(),
