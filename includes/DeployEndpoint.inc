@@ -81,7 +81,7 @@ class DeployEndpoint {
    *
    * @param string $lock_name
    *   The name of the lock that this deployment is working under.
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param Traversable $iterator
    *   Usually this will be an object from a subclass of DeployAggregatorBase.
@@ -110,7 +110,7 @@ class DeployEndpoint {
    *
    * @param string $lock_name
    *   The name of the lock that this deployment is working under.
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param Traversable $iterator
    *   Usually this will be an object from a subclass of DeployAggregatorBase.
