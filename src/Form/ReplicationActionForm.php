@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
@@ -83,7 +84,6 @@ class ReplicationActionForm extends FormBase {
 
     // Allow the user to not abort on conflicts.
     $source_workspace = $this->getDefaultSource($form_state)->getWorkspace();
-    $target_workspace = $this->getDefaultTarget($form_state)->getWorkspace();
     $conflicts = $this->conflictTracker
       ->useWorkspace($source_workspace)
       ->getAll();
@@ -93,7 +93,7 @@ class ReplicationActionForm extends FormBase {
         [
           '@count' => count($conflicts),
           ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $source_workspace->id()])->toString(),
-          ':target' => $target_workspace->label(),
+          ':target' => $this->getDefaultTarget($form_state)->label(),
         ]
       ));
       $form['is_aborted_on_conflict'] = [
