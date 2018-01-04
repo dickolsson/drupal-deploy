@@ -147,12 +147,7 @@ class ReplicationActionForm extends FormBase {
       drupal_set_message('Successful deployment.');
     }
     else {
-      if (!empty($response->get('error')->value)) {
-        drupal_set_message('Deployment error. ' . $response->get('error')->value, 'error');
-      }
-      else {
-        drupal_set_message('Deployment error. Check recent log messages for more info.', 'error');
-      }
+      drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
     }
   }
 
