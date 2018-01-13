@@ -8,7 +8,11 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 
+/**
+ * ReplicationAccessControlHandler class.
+ */
 class ReplicationAccessControlHandler extends EntityAccessControlHandler {
+
   /**
    * {@inheritdoc}
    */
@@ -19,7 +23,7 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler {
       return AccessResult::forbidden();
     }
 
-
     return parent::checkFieldAccess($operation, $field_definition, $account, $items);
   }
+
 }

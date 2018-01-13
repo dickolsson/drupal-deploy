@@ -20,12 +20,26 @@ use Drupal\workspace\WorkspacePointerInterface;
  */
 class ReplicationForm extends ContentEntityForm {
 
-  /** @var  WorkspacePointerInterface */
-  protected $source = null;
+  /**
+   * A source object.
+   *
+   * @var \Drupal\workspace\WorkspacePointerInterface
+   */
+  protected $source = NULL;
 
-  /** @var  WorkspacePointerInterface */
-  protected $target = null;
+  /**
+   * A target object.
+   *
+   * @var \Drupal\workspace\WorkspacePointerInterface
+   */
+  protected $target = NULL;
 
+  /**
+   * Format the title of the Replication process.
+   *
+   * @return string
+   *   The title formatted with source and target labels.
+   */
   public function addTitle() {
     $this->setEntity(Replication::create());
     if (!$this->getDefaultSource() || !$this->getDefaultTarget()) {
@@ -33,7 +47,7 @@ class ReplicationForm extends ContentEntityForm {
     }
     return $this->t('Deploy @source to @target', [
       '@source' => $this->getDefaultSource()->label(),
-      '@target' => $this->getDefaultTarget()->label()
+      '@target' => $this->getDefaultTarget()->label(),
     ]);
   }
 
@@ -122,7 +136,7 @@ class ReplicationForm extends ContentEntityForm {
     // Pass the abort flag to the ReplicationManager using runtime-only state,
     // i.e. a static.
     // @see \Drupal\workspace\ReplicatorManager
-	  // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+    // @see \Drupal\workspace\Entity\Form\WorkspaceForm
     $is_aborted_on_conflict = !$form_state->hasValue('is_aborted_on_conflict') || $form_state->getValue('is_aborted_on_conflict') === 'true';
     drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
@@ -145,7 +159,7 @@ class ReplicationForm extends ContentEntityForm {
         drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
       }
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       watchdog_exception('Deploy', $e);
       drupal_set_message($e->getMessage(), 'error');
     }
@@ -156,7 +170,10 @@ class ReplicationForm extends ContentEntityForm {
   }
 
   /**
+   * Main method to return an Ajax Response.
+   *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   AjaxResponse object.
    */
   public function deploy() {
     $response = new AjaxResponse();
@@ -166,6 +183,9 @@ class ReplicationForm extends ContentEntityForm {
     return $response;
   }
 
+  /**
+   * Returns a source object.
+   */
   protected function getDefaultSource() {
     if (!empty($this->source)) {
       return $this->source;
@@ -175,7 +195,7 @@ class ReplicationForm extends ContentEntityForm {
       return $this->source = $this->entity->get('source')->entity;
     }
 
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; */
+    /* @var \Drupal\multiversion\Entity\Workspace $workspace ; */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
     $workspace_pointers = \Drupal::service('entity_type.manager')
       ->getStorage('workspace_pointer')
@@ -183,6 +203,9 @@ class ReplicationForm extends ContentEntityForm {
     return $this->source = reset($workspace_pointers);
   }
 
+  /**
+   * Returns a target object.
+   */
   protected function getDefaultTarget() {
     if (!empty($this->target)) {
       return $this->target;
@@ -192,7 +215,7 @@ class ReplicationForm extends ContentEntityForm {
       return $this->target = $this->entity->get('target')->entity;
     }
 
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace ; */
+    /* @var \Drupal\multiversion\Entity\Workspace $workspace ; */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
     return $this->target = $workspace->get('upstream')->entity;
   }

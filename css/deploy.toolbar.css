@@ -4,9 +4,9 @@
  */
 
 .toolbar-bar .toolbar-icon-deploy:before {
-    background-image: url("../icons/bebebe/deploy.svg");
+  background-image: url("../icons/bebebe/deploy.svg");
 }
 
 .toolbar .toolbar-bar .deploy-toolbar-tab.toolbar-tab {
-    float: right;
+  float: right;
 }

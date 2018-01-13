@@ -10,11 +10,30 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * ReplicationViewBuilder class.
+ */
 class ReplicationViewBuilder extends EntityViewBuilder {
 
-  /** @var FormBuilderInterface $formBuilder **/
+  /**
+   * FormBuilderInterface dependency injection object.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
   protected $formBuilder;
 
+  /**
+   * Constructor class.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   Entity Type Interface object.
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   Entity Plug-in Manager object.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   Language Plug-in Manager object.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   Form Builder object.
+   */
   public function __construct(EntityTypeInterface $entity_type, EntityManagerInterface $entity_manager, LanguageManagerInterface $language_manager, FormBuilderInterface $form_builder) {
     parent::__construct($entity_type, $entity_manager, $language_manager);
     $this->formBuilder = $form_builder;
@@ -29,7 +48,8 @@ class ReplicationViewBuilder extends EntityViewBuilder {
       $container->get('entity.manager'),
       $container->get('language_manager'),
       $container->get('form_builder')
-    );  }
+    );
+  }
 
   /**
    * {@inheritdoc}

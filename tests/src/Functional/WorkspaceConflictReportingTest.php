@@ -74,7 +74,11 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     $live->set('upstream', $stage->id());
     $live->save();
 
-    $vocabulary = Vocabulary::create(['name' => 'Tags', 'vid' => 'tags', 'hierarchy' => 0]);
+    $vocabulary = Vocabulary::create([
+      'name' => 'Tags',
+      'vid' => 'tags',
+      'hierarchy' => 0,
+    ]);
     $vocabulary->save();
 
     $node = Node::create(['type' => 'test', 'title' => 'Node title']);
@@ -91,7 +95,7 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/deployment/add');
     $this->assertSession()->pageTextContains('There are no conflicts.');
     $deployment = [
-      'name[0][value]' => 'Deploy Live to Stage'
+      'name[0][value]' => 'Deploy Live to Stage',
     ];
     $this->drupalPostForm('admin/structure/deployment/add', $deployment, t('Deploy to Stage'));
 
@@ -121,7 +125,7 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/deployment/add');
     $this->assertSession()->pageTextContains('There are no conflicts.');
     $deployment = [
-      'name[0][value]' => 'Deploy Stage to Live'
+      'name[0][value]' => 'Deploy Stage to Live',
     ];
     $this->drupalPostForm('admin/structure/deployment/add', $deployment, t('Deploy to Live'));
 

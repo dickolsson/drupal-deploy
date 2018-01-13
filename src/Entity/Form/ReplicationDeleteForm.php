@@ -12,6 +12,7 @@ use Drupal\Core\Url;
  * @ingroup deploy
  */
 class ReplicationDeleteForm extends ContentEntityConfirmFormBase {
+
   /**
    * {@inheritdoc}
    */
@@ -43,7 +44,7 @@ class ReplicationDeleteForm extends ContentEntityConfirmFormBase {
       $this->t('@type: deleted @label.',
         [
           '@type' => $this->entity->bundle(),
-          '@label' => $this->entity->label()
+          '@label' => $this->entity->label(),
         ]
         )
     );

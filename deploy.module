@@ -52,8 +52,8 @@ function deploy_entity_type_alter(array &$entity_types) {
   if (!empty($entity_types['replication'])) {
     /** @var \Drupal\Core\Entity\EntityTypeInterface $replication */
     $replication = $entity_types['replication'];
-    $replication ->setHandlerClass('list_builder', 'Drupal\deploy\ReplicationListBuilder');
-    $replication ->setHandlerClass('view_builder', 'Drupal\deploy\Entity\ReplicationViewBuilder');
+    $replication->setHandlerClass('list_builder', 'Drupal\deploy\ReplicationListBuilder');
+    $replication->setHandlerClass('view_builder', 'Drupal\deploy\Entity\ReplicationViewBuilder');
     $replication->setHandlerClass('access', 'Drupal\deploy\ReplicationAccessControlHandler');
     $replication->setHandlerClass('route_provider', ['html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider']);
     $replication->setHandlerClass('form', [

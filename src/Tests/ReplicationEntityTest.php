@@ -2,7 +2,6 @@
 
 namespace Drupal\deploy\Tests;
 
-use Drupal\multiversion\Entity\Workspace;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -16,6 +15,9 @@ class ReplicationEntityTest extends WebTestBase {
 
   public static $modules = ['deploy'];
 
+  /**
+   * Functional test for Replication.
+   */
   public function testReplication() {
     $this->webUser = $this->drupalCreateUser([
       'administer workspaces',
@@ -28,11 +30,12 @@ class ReplicationEntityTest extends WebTestBase {
 
     $this->drupalGet('admin/structure/deployment/add');
     $deployment = [
-      'name[0][value]' => 'Test Deployment'
+      'name[0][value]' => 'Test Deployment',
     ];
     $this->drupalPostForm('admin/structure/deployment/add', $deployment, t('Deploy to Live'));
 
     $this->drupalGet('admin/structure/deployment');
     $this->assertText($deployment['name[0][value]'], 'Deployment found in list of deployments');
   }
+
 }

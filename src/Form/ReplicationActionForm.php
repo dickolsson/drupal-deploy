@@ -8,7 +8,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
@@ -16,31 +15,42 @@ use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * ReplicationActionForm class.
+ */
 class ReplicationActionForm extends FormBase {
 
   /**
    * The injected service to track conflicts during replication.
    *
-   * @var ConflictTrackerInterface
+   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
    */
   protected $conflictTracker;
 
   /**
-   * @var  WorkspacePointerInterface
+   * A source object.
+   *
+   * @var \Drupal\workspace\WorkspacePointerInterface
    */
-  protected $source = null;
+  protected $source = NULL;
 
   /**
-   * @var  WorkspacePointerInterface
+   * A target object.
+   *
+   * @var \Drupal\workspace\WorkspacePointerInterface
    */
-  protected $target = null;
+  protected $target = NULL;
 
   /**
+   * The Entity Type Plug-in Manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The Workspace Plug-in Manager.
+   *
    * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
@@ -48,10 +58,12 @@ class ReplicationActionForm extends FormBase {
   /**
    * Constructs a ContentEntityForm object.
    *
-   * @param ConflictTrackerInterface $conflict_tracker
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
    *   The conflict tracking service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type plug-in manager.
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
    */
   public function __construct(ConflictTrackerInterface $conflict_tracker, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager) {
     $this->conflictTracker = $conflict_tracker;
@@ -71,7 +83,9 @@ class ReplicationActionForm extends FormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * Implements buildForm().
+   *
+   * {@inheritDoc}.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity = $this->getEntity($form_state);
@@ -79,7 +93,7 @@ class ReplicationActionForm extends FormBase {
     $form['#weight'] = 9999;
     $form['replication_id'] = [
       '#type' => 'hidden',
-      '#value' => $entity->id()
+      '#value' => $entity->id(),
     ];
 
     // Allow the user to not abort on conflicts.
@@ -119,25 +133,29 @@ class ReplicationActionForm extends FormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * Implements getFormId().
+   *
+   * {@inheritDoc}.
    */
   public function getFormId() {
     return 'replication_action';
   }
 
   /**
-   * {@inheritDoc}
+   * Implements submitForm().
+   *
+   * {@inheritDoc}.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Pass the abort flag to the ReplicationManager using runtime-only state,
     // i.e. a static.
     // @see \Drupal\workspace\ReplicatorManager
-	  // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+    // @see \Drupal\workspace\Entity\Form\WorkspaceForm
     $is_aborted_on_conflict = !$form_state->hasValue('is_aborted_on_conflict') || $form_state->getValue('is_aborted_on_conflict') === 'true';
     drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
     $entity = $this->getEntity($form_state);
-    /** @var ReplicationLogInterface $response */
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $response */
     $response = \Drupal::service('workspace.replicator_manager')->replicate(
         $entity->get('source')->entity,
         $entity->get('target')->entity
@@ -151,9 +169,20 @@ class ReplicationActionForm extends FormBase {
     }
   }
 
+  /**
+   * Returns the entity object itself or an EntityMalformedException if error.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form State values.
+   *
+   * @return \Drupal\workspace\Entity\Replication
+   *   The expected parent class for $entity.
+   *
+   * @throws EntityMalformedException
+   */
   protected function getEntity(FormStateInterface $form_state) {
     $args = $form_state->getBuildInfo()['args'];
-    /** @var Replication $entity */
+    /** @var \Drupal\workspace\Entity\Replication $entity */
     $entity = $args[0];
     if ($entity instanceof Replication) {
       return $entity;
@@ -183,6 +212,15 @@ class ReplicationActionForm extends FormBase {
     ];
   }
 
+  /**
+   * Returns a source object.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form State values.
+   *
+   * @return mixed
+   *   The source object itself.
+   */
   protected function getDefaultSource(FormStateInterface $form_state) {
     if (!empty($this->source)) {
       return $this->source;
@@ -200,6 +238,15 @@ class ReplicationActionForm extends FormBase {
     return $this->source = reset($workspace_pointers);
   }
 
+  /**
+   * Returns a target object.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form State values.
+   *
+   * @return mixed
+   *   The target object itself.
+   */
   protected function getDefaultTarget(FormStateInterface $form_state) {
     if (!empty($this->target)) {
       return $this->target;
