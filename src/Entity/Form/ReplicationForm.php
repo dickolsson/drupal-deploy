@@ -63,8 +63,11 @@ class ReplicationForm extends ContentEntityForm {
     $default_source = $this->getDefaultSource();
     $default_target = $this->getDefaultTarget();
     if (!$default_source || !$default_target) {
-      $message = 'Source and target must be set, make sure your current workspace has an upstream. Go to <a href=":path">this page</a> to edit your workspaces.';
-      $message = $this->t($message, [':path' => Url::fromRoute('entity.workspace.collection')->toString()]);
+      $message = $this->t('Source and target must be set, make sure your current workspace has an upstream. Go to <a href=":path">this page</a> to edit your workspaces.',
+        [
+          ':path' => Url::fromRoute('entity.workspace.collection')->toString(),
+        ]
+      );
       if ($js) {
         return ['#markup' => $message];
       }
