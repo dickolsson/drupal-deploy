@@ -8,11 +8,6 @@ entity.replication.canonical:
   base_route: entity.replication.canonical
   title: 'View'
 
-entity.replication.edit_form:
-  route_name: entity.replication.edit_form
-  base_route: entity.replication.canonical
-  title: Edit
-
 entity.replication.delete_form:
   route_name:  entity.replication.delete_form
   base_route:  entity.replication.canonical

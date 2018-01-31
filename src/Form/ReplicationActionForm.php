@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
@@ -125,10 +126,30 @@ class ReplicationActionForm extends FormBase {
       $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
     }
 
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $entity->get('replicated')->value ? $this->t('Re-deploy') : $this->t('Deploy'),
-    ];
+    $target_workspace = $this->getDefaultTarget($form_state)->getWorkspace();
+    if ($source_workspace->isPublished() && $target_workspace->isPublished()) {
+      $form['submit'] = [
+        '#type' => 'submit',
+        '#value' => $entity->get('replicated')->value ? $this->t('Re-deploy') : $this->t('Deploy'),
+      ];
+    }
+    else {
+      if (!$source_workspace->isPublished() && !$target_workspace->isPublished()) {
+        $message = $this->t('This deployment cannot be re-deployed because both source workspace (%source) and target workspace (%target) have been archived.',
+          [
+            '%source' => $source_workspace->label(),
+            '%target' => $target_workspace->label(),
+          ]
+        );
+      }
+      elseif (!$target_workspace->isPublished()) {
+        $message = $this->t('This deployment cannot be re-deployed because target workspace (%target) has been archived.', ['%target' => $target_workspace->label()]);
+      }
+      else {
+        $message = $this->t('This deployment cannot be re-deployed because source workspace (%source) has been archived.', ['%source' => $source_workspace->label()]);
+      }
+      $form['message'] = $this->generateMessageRenderArray('warning', $message);
+    }
     return $form;
   }
 

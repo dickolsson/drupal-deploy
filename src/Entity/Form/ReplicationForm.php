@@ -5,10 +5,12 @@ namespace Drupal\deploy\Entity\Form;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
+use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\multiversion\Entity\Workspace;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\WorkspacePointerInterface;
@@ -107,6 +109,15 @@ class ReplicationForm extends ContentEntityForm {
       $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
     }
 
+    if (!$source_workspace->isDefaultWorkspace()) {
+      $form['archive'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Archive workspace after deployment'),
+        '#description' => $this->t('The workspace will be archived on successful deployment.'),
+        '#default_value' => FALSE,
+      ];
+    }
+
     $form['source']['widget']['#default_value'] = [$default_source->id()];
 
     if (empty($this->entity->get('target')->target_id) && $default_target) {
@@ -156,7 +167,26 @@ class ReplicationForm extends ContentEntityForm {
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
-        drupal_set_message('Successful deployment.');
+        if ($form_state->hasValue('archive') && $form_state->getValue('archive') == TRUE) {
+          $this->entity->get('source')->entity->getWorkspace()->setUnpublished()->save();
+          /** @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager */
+          $workspace_manager = \Drupal::service('workspace.manager');
+          $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+          $default_workspace = Workspace::load($default_workspace_id);
+          $workspace_manager->setActiveWorkspace($default_workspace);
+          drupal_set_message($this->t('Successful deployment. Workspace %workspace has been archived and workspace %default has been set as active.',
+            [
+              '%workspace' => $this->getDefaultSource()->label(),
+              '%default' => $default_workspace->label(),
+            ]
+          ));
+          if (!$js) {
+            $form_state->setRedirect('<front>');
+          }
+        }
+        else {
+          drupal_set_message('Successful deployment.');
+        }
       }
       else {
         drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
@@ -181,8 +211,7 @@ class ReplicationForm extends ContentEntityForm {
   public function deploy() {
     $response = new AjaxResponse();
     $response->addCommand(new CloseModalDialogCommand());
-    $status_messages = ['#type' => 'status_messages'];
-    $response->addCommand(new PrependCommand('.region-highlighted', \Drupal::service('renderer')->renderRoot($status_messages)));
+    $response->addCommand(new RedirectCommand(Url::fromRoute('<front>')->setAbsolute()->toString()));
     return $response;
   }
 
