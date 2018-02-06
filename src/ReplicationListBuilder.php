@@ -35,8 +35,8 @@ class ReplicationListBuilder extends EntityListBuilder {
     /* @var $entity \Drupal\workspace\Entity\Replication */
     $row['replicated'] = $entity->get('replicated')->value ? $this->t('&#10004;') : $this->t('&#10006;');
     $row['name'] = $entity->link();
-    $row['source'] = $entity->get('source')->entity->label();
-    $row['target'] = $entity->get('target')->entity->label();
+    $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Archived</em>');
+    $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Archived</em>');
     $row['changed'] = $formatter->format($entity->getChangedTime());
     $row['created'] = $formatter->format($entity->getCreatedTime());
     return $row;

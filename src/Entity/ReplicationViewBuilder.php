@@ -66,9 +66,11 @@ class ReplicationViewBuilder extends EntityViewBuilder {
   public function view(EntityInterface $entity, $view_mode = 'FULL', $langcode = NULL) {
     $build = parent::view($entity, $view_mode, $langcode);
 
+    $source = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Archived</em>');
+    $target = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Archived</em>');
     $build['info'] = [
       '#prefix' => '<p>',
-      '#markup' => $entity->get('source')->entity->label() . ' to ' . $entity->get('target')->entity->label(),
+      '#markup' => $this->t('@source to @target', ['@source' => $source, '@target' => $target]),
       '#suffix' => '</p>',
     ];
     $form = $this->formBuilder->getForm('\Drupal\deploy\Form\ReplicationActionForm', $entity);

@@ -98,7 +98,13 @@ class ReplicationActionForm extends FormBase {
     ];
 
     // Allow the user to not abort on conflicts.
-    $source_workspace = $this->getDefaultSource($form_state)->getWorkspace();
+    if ($default_source = $this->getDefaultSource($form_state)) {
+      $source_workspace = $default_source->getWorkspace();
+    }
+
+    if ($default_target = $this->getDefaultTarget($form_state)) {
+      $target_workspace = $default_target->getWorkspace();
+    }
     $conflicts = $this->conflictTracker
       ->useWorkspace($source_workspace)
       ->getAll();
@@ -126,30 +132,33 @@ class ReplicationActionForm extends FormBase {
       $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
     }
 
-    $target_workspace = $this->getDefaultTarget($form_state)->getWorkspace();
-    if ($source_workspace->isPublished() && $target_workspace->isPublished()) {
+
+
+    if ($source_workspace && !$source_workspace->isPublished() && $target_workspace && !$target_workspace->isPublished()) {
+      $message = $this->t('This deployment cannot be re-deployed because both source workspace (%source) and target workspace (%target) have been archived.',
+        [
+          '%source' => $source_workspace->label(),
+          '%target' => $target_workspace->label(),
+        ]
+      );
+    }
+    elseif (!$default_source || ($source_workspace && !$source_workspace->isPublished())) {
+      $message = $this->t('This deployment cannot be re-deployed because the source workspace %source has been archived.', ['%source' => $source_workspace ? '(' . $source_workspace->label() . ')' : '']);
+    }
+    elseif (!$default_target || ($target_workspace && !$target_workspace->isPublished())) {
+      $message = $this->t('This deployment cannot be re-deployed because the target workspace %target has been archived.', ['%target' => $target_workspace ? '(' . $target_workspace->label() . ')' : '']);
+    }
+
+    if (isset($message)) {
+      $form['message'] = $this->generateMessageRenderArray('warning', $message);
+    }
+    else {
       $form['submit'] = [
         '#type' => 'submit',
         '#value' => $entity->get('replicated')->value ? $this->t('Re-deploy') : $this->t('Deploy'),
       ];
     }
-    else {
-      if (!$source_workspace->isPublished() && !$target_workspace->isPublished()) {
-        $message = $this->t('This deployment cannot be re-deployed because both source workspace (%source) and target workspace (%target) have been archived.',
-          [
-            '%source' => $source_workspace->label(),
-            '%target' => $target_workspace->label(),
-          ]
-        );
-      }
-      elseif (!$target_workspace->isPublished()) {
-        $message = $this->t('This deployment cannot be re-deployed because target workspace (%target) has been archived.', ['%target' => $target_workspace->label()]);
-      }
-      else {
-        $message = $this->t('This deployment cannot be re-deployed because source workspace (%source) has been archived.', ['%source' => $source_workspace->label()]);
-      }
-      $form['message'] = $this->generateMessageRenderArray('warning', $message);
-    }
+
     return $form;
   }
 
@@ -250,13 +259,6 @@ class ReplicationActionForm extends FormBase {
     if (!empty($this->getEntity($form_state)->get('source')) && ($this->getEntity($form_state)->get('source')->entity instanceof WorkspacePointerInterface)) {
       return $this->source = $this->getEntity($form_state)->get('source')->entity;
     }
-
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace */
-    $workspace = $this->workspaceManager->getActiveWorkspace();
-    $workspace_pointers = $this->entityTypeManager
-      ->getStorage('workspace_pointer')
-      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
-    return $this->source = reset($workspace_pointers);
   }
 
   /**
@@ -276,10 +278,6 @@ class ReplicationActionForm extends FormBase {
     if (!empty($this->getEntity($form_state)->get('target')) && ($this->getEntity($form_state)->get('target')->entity instanceof WorkspacePointerInterface)) {
       return $this->target = $this->getEntity($form_state)->get('target')->entity;
     }
-
-    /** @var \Drupal\multiversion\Entity\Workspace $workspace */
-    $workspace = $this->workspaceManager->getActiveWorkspace();
-    return $this->target = $workspace->get('upstream')->entity;
   }
 
 }
