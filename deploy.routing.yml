@@ -15,6 +15,6 @@ entity.replication.add_form:
     _entity_form: replication.add
     _title_callback: '\Drupal\deploy\Entity\Form\ReplicationForm::addTitle'
   requirements:
-    _permission: 'administer deployments'
+    _entity_create_access: 'replication'
   options:
     _admin_route: TRUE

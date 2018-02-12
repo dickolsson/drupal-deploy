@@ -22,6 +22,7 @@ class ReplicationEntityTest extends WebTestBase {
     $this->webUser = $this->drupalCreateUser([
       'administer workspaces',
       'administer deployments',
+      'Deploy to Live',
     ]);
 
     $this->drupalLogin($this->webUser);

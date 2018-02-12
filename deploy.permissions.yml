@@ -1,2 +1,5 @@
 administer deployments:
   title: 'Administer deployments'
+
+permission_callbacks:
+  - \Drupal\deploy\DeployPermissions::workspacePointerPermissions

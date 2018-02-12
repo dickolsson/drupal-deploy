@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * New permissions.
+ */
+function deploy_update_8100() {
+  return t('New permissions have been added for deployment, please update your roles.');
+}

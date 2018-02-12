@@ -61,6 +61,8 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
       'administer content types',
       'administer workspaces',
       'administer deployments',
+      'Deploy to Live',
+      'Deploy to Stage',
     ];
 
     $node_type = NodeType::create(['type' => 'test', 'label' => 'Test']);
