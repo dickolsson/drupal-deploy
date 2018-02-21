@@ -1,5 +1,8 @@
 administer deployments:
   title: 'Administer deployments'
-
+deploy to any workspace:
+  title: 'Deploy to any workspace'
+deploy to own workspace:
+  title: 'Deploy to own workspace'
 permission_callbacks:
   - \Drupal\deploy\DeployPermissions::workspacePointerPermissions

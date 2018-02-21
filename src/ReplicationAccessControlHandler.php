@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -67,11 +68,33 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
     $upstream_workspace_pointer = $active_workspace->upstream->entity;
 
-    // When no upstream workspace pointer is set or when the user doesn't have
-    // the permissions to deploy to the upstream, the access is forbidden.
-    if (!$upstream_workspace_pointer || !$account->hasPermission('Deploy to ' . $upstream_workspace_pointer->label())) {
-      $access = AccessResult::forbidden();
+    // When no upstream workspace pointer is set the access is forbidden.
+    if (!$upstream_workspace_pointer) {
+      return AccessResult::forbidden('No target is set for the active workspace.');
     }
+
+    // The 'deploy to any workspace' permission will always allow the user to
+    // create replication entities and perform deployments.
+    if ($account->hasPermission('deploy to any workspace')) {
+      return AccessResult::allowed();
+    }
+
+    // Load just the ID and workspace separately to allow for remote workspace
+    // pointers which won't have the workspace_pointer field set.
+    $upstream_workspace_id = $upstream_workspace_pointer->workspace_pointer->target_id;
+    $upstream_workspace = Workspace::load($upstream_workspace_id);
+    // When the upstream workspace is set, the owner matches the account, and
+    // the user has the correct permission then allow access.
+    if ($upstream_workspace && $upstream_workspace->getOwnerId() == $account->id() && $account->hasPermission('deploy to own workspace')) {
+      return AccessResult::allowed();
+    }
+
+    // When the user doesn't have permissions to deploy to the upstream the
+    // access is forbidden.
+    if (!$account->hasPermission('Deploy to ' . $upstream_workspace_pointer->label())) {
+      return AccessResult::forbidden('You do not have permission to deploy to the target.');
+    }
+
     return $access;
   }
 
