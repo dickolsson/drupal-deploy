@@ -11,11 +11,6 @@ env:
   - MAKE_FILE=drupal-8.4.x.make.yml
   - MAKE_FILE=drupal-8.5.x.make.yml
 
-matrix:
-  allow_failures:
-    - env: MAKE_FILE=drupal-8.5.x.make.yml
-  fast_finish: true
-
 services:
   - mysql
 
