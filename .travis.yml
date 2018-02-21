@@ -45,7 +45,7 @@ install:
   - php ~/drush.phar --root=$HOME/www --yes --uri=http://localhost:8080 en deploy
 
 script:
-  - cd ~/www && php ./core/scripts/run-tests.sh --verbose --keep-results --color --concurrency 4 --php `which php` --sqlite /tmp/test.sqlite --url http://localhost:8080 --module deploy | tee /tmp/test.log ; export STATUS_SCRIPT=${PIPESTATUS[0]}
+  - cd ~/www && php ./core/scripts/run-tests.sh --suppress-deprecations --verbose --keep-results --color --concurrency 4 --php `which php` --sqlite /tmp/test.sqlite --url http://localhost:8080 --module deploy | tee /tmp/test.log ; export STATUS_SCRIPT=${PIPESTATUS[0]}
   - cat /tmp/access8080.log
   - cat /tmp/error8080.log
   # Workaround so that we exit with the correct status.
