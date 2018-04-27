@@ -42,6 +42,21 @@ function deploy_toolbar() {
 }
 
 /**
+ * Implements hook_toolbar_alter().
+ */
+function deploy_toolbar_alter(&$items) {
+  $items['workspace_switcher']['tray']['deployments'] = [
+    '#type' => 'link',
+    '#title' => t('Deployments'),
+    '#url' => Url::fromRoute('entity.replication.collection'),
+    '#attributes' => [
+      'class' => 'deployments',
+      'title' => 'View all deployments',
+    ]
+  ];
+}
+
+/**
  * Implements hook_entity_type_alter().
  */
 function deploy_entity_type_alter(array &$entity_types) {
@@ -49,7 +64,6 @@ function deploy_entity_type_alter(array &$entity_types) {
     /** @var \Drupal\Core\Entity\EntityTypeInterface $replication */
     $replication = $entity_types['replication'];
     $replication->setHandlerClass('list_builder', 'Drupal\deploy\ReplicationListBuilder');
-    $replication->setHandlerClass('view_builder', 'Drupal\deploy\Entity\ReplicationViewBuilder');
     $replication->setHandlerClass('access', 'Drupal\deploy\ReplicationAccessControlHandler');
     $replication->setHandlerClass('route_provider', ['html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider']);
     $replication->setHandlerClass('form', [
@@ -57,7 +71,6 @@ function deploy_entity_type_alter(array &$entity_types) {
       'add' => 'Drupal\deploy\Entity\Form\ReplicationForm',
       'delete' => 'Drupal\deploy\Entity\Form\ReplicationDeleteForm',
     ]);
-    $replication->setLinkTemplate('canonical', '/admin/structure/deployment/{replication}');
     $replication->setLinkTemplate('collection', '/admin/structure/deployment');
     $replication->setLinkTemplate('delete-form', '/admin/structure/deployment/{replication}/delete');
     $replication->set('field_ui_base_route', 'entity.replication.collection');

@@ -8,6 +8,7 @@ use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\Workspace;
@@ -162,30 +163,34 @@ class ReplicationForm extends ContentEntityForm {
     try {
       $response = \Drupal::service('workspace.replicator_manager')->replicate(
         $this->entity->get('source')->entity,
-        $this->entity->get('target')->entity
+        $this->entity->get('target')->entity,
+        null,
+        $this->entity
       );
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
+        drupal_set_message($this->t('Deployment queued, check the @deployments_page for the status.', ['@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')->toString()]));
+
         if ($form_state->hasValue('archive') && $form_state->getValue('archive') == TRUE) {
-          $this->entity->get('source')->entity->getWorkspace()->setUnpublished()->save();
+          $this->entity->get('source')->entity->getWorkspace()
+            ->setUnpublished()
+            ->save();
           /** @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager */
           $workspace_manager = \Drupal::service('workspace.manager');
-          $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+          $default_workspace_id = \Drupal::getContainer()
+            ->getParameter('workspace.default');
           $default_workspace = Workspace::load($default_workspace_id);
           $workspace_manager->setActiveWorkspace($default_workspace);
-          drupal_set_message($this->t('Successful deployment. Workspace %workspace has been archived and workspace %default has been set as active.',
+          drupal_set_message($this->t('Workspace %workspace has been archived and workspace %default has been set as active.',
             [
               '%workspace' => $this->getDefaultSource()->label(),
               '%default' => $default_workspace->label(),
             ]
           ));
-          if (!$js) {
-            $form_state->setRedirect('<front>');
-          }
         }
-        else {
-          drupal_set_message('Successful deployment.');
+        if (!$js) {
+          $form_state->setRedirect('<front>');
         }
       }
       else {

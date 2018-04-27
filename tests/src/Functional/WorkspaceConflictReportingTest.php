@@ -8,6 +8,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 use Drupal\Tests\workspace\Functional\WorkspaceTestUtilities;
 
 /**
@@ -19,6 +20,7 @@ use Drupal\Tests\workspace\Functional\WorkspaceTestUtilities;
  */
 class WorkspaceConflictReportingTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
+  use CronRunTrait;
 
   public static $modules = [
     'node',
@@ -100,6 +102,8 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
       'name[0][value]' => 'Deploy Live to Stage',
     ];
     $this->drupalPostForm('admin/structure/deployment/add', $deployment, t('Deploy to Stage'));
+    $this->cronRun();
+    $this->cronRun();
 
     $this->drupalGet('admin/structure/deployment');
     $this->assertSession()->pageTextContains($deployment['name[0][value]']);
@@ -130,16 +134,11 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
       'name[0][value]' => 'Deploy Stage to Live',
     ];
     $this->drupalPostForm('admin/structure/deployment/add', $deployment, t('Deploy to Live'));
+    $this->cronRun();
+    $this->cronRun();
 
     $this->drupalGet('admin/structure/deployment/add');
     $this->assertSession()->pageTextNotContains('There are no conflicts.');
-
-    $this->drupalGet('admin/structure/deployment/1');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('There are no conflicts.');
-    $this->drupalGet('admin/structure/deployment/2');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('There are 3 conflict(s) with the Live workspace. Pushing changes to Live may result in unexpected behavior or data loss, and cannot be undone. Please proceed with caution.');
 
     $this->drupalGet("/admin/structure/workspace/{$live->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);

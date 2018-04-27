@@ -10,3 +10,8 @@
 .toolbar .toolbar-bar .deploy-toolbar-tab.toolbar-tab {
   float: right;
 }
+
+.toolbar .deployments {
+  float: right;
+}
+

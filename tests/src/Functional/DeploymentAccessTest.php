@@ -36,17 +36,17 @@ class DeploymentAccessTest extends BrowserTestBase {
     // Check the user can't access the deploy link or the deploy page for Live.
     $this->drupalGet('<front>');
     $web_assert->linkExists('Live');
-    $web_assert->linkNotExists('Deploy');
+    $web_assert->linkByHrefNotExists('/admin/structure/deployment/add');
     $this->drupalGet('/admin/structure/deployment/add');
     $web_assert->statusCodeEquals('403');
 
     // Switch to the stage workspace.
     $this->drupalPostForm('/admin/structure/workspace/2/activate', [], 'Activate');
 
-    // Check ther use can't access the deploy link or the deploy page for Stage.
+    // Check the user can't access the deploy link or the deploy page for Stage.
     $this->drupalGet('<front>');
     $web_assert->linkExists('Stage');
-    $web_assert->linkNotExists('Deploy');
+    $web_assert->linkByHrefNotExists('/admin/structure/deployment/add');
     $this->drupalGet('/admin/structure/deployment/add');
     $web_assert->statusCodeEquals('403');
 
@@ -57,7 +57,7 @@ class DeploymentAccessTest extends BrowserTestBase {
     // Check the use can access the deploy link or the deploy page for Stage.
     $this->drupalGet('<front>');
     $web_assert->linkExists('Stage');
-    $web_assert->linkExists('Deploy');
+    $web_assert->linkByHrefExists('/admin/structure/deployment/add');
     $this->drupalGet('/admin/structure/deployment/add');
     $web_assert->pageTextContains('Deploy Stage to Live');
 
