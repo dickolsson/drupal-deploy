@@ -18,3 +18,4 @@ entity.replication.add_form:
     _entity_create_access: 'replication'
   options:
     _admin_route: TRUE
+    no_cache: TRUE

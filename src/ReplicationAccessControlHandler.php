@@ -73,6 +73,10 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
       return AccessResult::forbidden('No target is set for the active workspace.');
     }
 
+    if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
+      return AccessResult::forbidden('Replication is blocked.');
+    }
+
     // The 'deploy to any workspace' permission will always allow the user to
     // create replication entities and perform deployments.
     if ($account->hasPermission('deploy to any workspace')) {

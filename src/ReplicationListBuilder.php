@@ -4,6 +4,7 @@ namespace Drupal\deploy;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\LinkGeneratorTrait;
 use Drupal\workspace\Entity\Replication;
 
@@ -53,9 +54,15 @@ class ReplicationListBuilder extends EntityListBuilder {
       $cron_last = \Drupal::state()->get('install_time', 0);
     }
 
-    $build = [
-      '#markup' => $this->t('Last replication ran @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]),
-    ];
+    $build = [];
+    $build['#markup'] = '';
+    if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
+      $build['#markup'] .= \Drupal::service('renderer')->render(
+        $this->generateMessageRenderArray('warning', t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']))
+      );
+    }
+
+    $build['#markup'] .= $this->t('Last cron ran @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
     $build += parent::render();
     return $build;
   }
@@ -85,6 +92,28 @@ class ReplicationListBuilder extends EntityListBuilder {
       Replication::REPLICATED => $this->t('&#10004; Done'),
     ];
     return $icons[$status];
+  }
+
+  /**
+   * Generate a message render array with the given text.
+   *
+   * @param string $type
+   *   The type of message: status, warning, or error.
+   * @param string $message
+   *   The message to create with.
+   *
+   * @return array
+   *   The render array for a status message.
+   *
+   * @see \Drupal\Core\Render\Element\StatusMessages
+   */
+  protected function generateMessageRenderArray($type, $message) {
+    return [
+      '#theme' => 'status_messages',
+      '#message_list' => [
+        $type => [Markup::create($message)],
+      ],
+    ];
   }
 
 }
