@@ -57,9 +57,8 @@ class ReplicationListBuilder extends EntityListBuilder {
     $build = [];
     $build['#markup'] = '';
     if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
-      $build['#markup'] .= \Drupal::service('renderer')->render(
-        $this->generateMessageRenderArray('warning', t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']))
-      );
+      $message = $this->generateMessageRenderArray('warning', t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']));
+      $build['#markup'] .= \Drupal::service('renderer')->render($message);
     }
 
     $build['#markup'] .= $this->t('Last cron ran @time ago', ['@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($cron_last)]);
