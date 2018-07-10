@@ -3,4 +3,4 @@ type: module
 description: ' Allows content to be deployed between servers. Either to be used as a content staging solution or to deploy content across a cluster of different sites.'
 core: 8.x
 dependencies:
-  - workspace
+  - workspace:workspace
