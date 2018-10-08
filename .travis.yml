@@ -49,7 +49,7 @@ install:
 
   # Install the site that will host our tests.
   - cd $TRAVIS_BUILD_DIR/../drupal
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes site-install --db-url=mysql://root:@127.0.0.1/drupal testing
+  - php -d sendmail_path=`which true` "$(dirname "$(which drush)")"/drush.php --yes site-install --db-url=mysql://root:@127.0.0.1/drupal testing
 
 before_script:
   # Enable required modules and ignore any output to not break the test.
