@@ -81,7 +81,7 @@ class DeployEndpoint {
    *
    * @param string $lock_name
    *   The name of the lock that this deployment is working under.
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param Traversable $iterator
    *   Usually this will be an object from a subclass of DeployAggregatorBase.
@@ -95,6 +95,9 @@ class DeployEndpoint {
       }
       $this->authenticator->deploy($iterator);
       deploy_log($deployment_key, DEPLOY_STATUS_DEPLOYED);
+      if (variable_get('deploy_audit_log', FALSE)) {
+        $this->log_deployed_entities($deployment_key, $iterator);
+      }
     }
     catch (Exception $e) {
       if (!empty($lock_name)) {
@@ -110,7 +113,7 @@ class DeployEndpoint {
    *
    * @param string $lock_name
    *   The name of the lock that this deployment is working under.
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param Traversable $iterator
    *   Usually this will be an object from a subclass of DeployAggregatorBase.
@@ -135,5 +138,24 @@ class DeployEndpoint {
       module_invoke_all('deploy_plan_publish', DEPLOY_STATUS_FAILED);
       throw $e;
     }
+  }
+
+  /**
+   * Logs to watchdog the list of deployed entities.
+   *
+   * @param interger $deployment_key
+   *   The unique deployment key for this deployment.
+   * @param Traversable $iterator
+   *   Usually this will be an object from a subclass of DeployAggregatorBase.
+   */
+  public function log_deployed_entities($deployment_key, Traversable $iterator) {
+    $entities = [];
+    foreach ($iterator->getEntities() as $key => $item) {
+      $entities[] = $item['type'] . ': ' . $item['id'];
+    }
+    watchdog('deployed_content', 'Deployed %deploy_key with entities:</br> %entities', array(
+      '%deploy_key' => $deployment_key,
+      '%entities' => implode(', ', $entities),
+    ));
   }
 }

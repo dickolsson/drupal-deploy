@@ -33,7 +33,7 @@ interface DeployProcessor {
    * Main processing method that should hand over the aggregator to the endpoint
    * to deploy all the entities.
    *
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param DeployEndpoint $endpoint
    *   The endpoint object to hand over the aggregator to.
@@ -47,7 +47,7 @@ interface DeployProcessor {
    * to publish all deployed entities. This method will only be called after
    * successful deployments.
    *
-   * @param interger $deployment_key
+   * @param integer $deployment_key
    *   The unique deployment key for this deployment.
    * @param DeployEndpoint $endpoint
    *   The endpoint object to hand over the aggregator to.

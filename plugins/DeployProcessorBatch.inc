@@ -75,6 +75,14 @@ class DeployProcessorBatch extends DeployProcessorMemory {
       'finished' => 'deploy_batch_finished_operation',
     );
     batch_set($batch);
-    batch_process('admin/structure/deploy');
+    if (drupal_is_cli() && function_exists('drush_main')) {
+      // Drush has its own batch processor.
+      $batch =& batch_get();
+      $batch['progressive'] = FALSE;
+      drush_backend_batch_process();
+    }
+    else {
+      batch_process('admin/structure/deploy');
+    }
   }
 }

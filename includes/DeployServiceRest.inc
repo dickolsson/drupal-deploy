@@ -90,7 +90,7 @@ class DeployServiceRest implements DeployService {
       'url' => array(
         '#type' => 'textfield',
         '#title' => t('Endpoint URL'),
-        '#description' => t('Enter endpoint URL. Example: %url', array('%url' => 'http://example.com/api')),
+        '#description' => t('Enter endpoint URL. Example: %url', array('%url' => 'http://example.com/services/rest')),
         '#default_value' => $this->config['url'],
       ),
       'timeout' => array(

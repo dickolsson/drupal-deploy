@@ -1,5 +1,5 @@
 name = Deploy Managed Aggregator UI
-description = "Add a form for adding supported entities to managed aggregtor plans"
+description = "Add a form for adding supported entities to managed aggregator plans"
 core = 7.x
 
 dependencies[] = deploy

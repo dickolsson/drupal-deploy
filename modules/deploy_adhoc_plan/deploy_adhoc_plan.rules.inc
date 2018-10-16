@@ -41,6 +41,19 @@ function deploy_adhoc_plan_rules_action_info() {
         ),
       ),
     ),
+    'deploy_adhoc_plan_action_move_to_adhoc' => array(
+      'label' => t('Move an entity to ad hoc deployment plan'),
+      'group' => t('Deploy'),
+      'access callback' => 'deploy_adhoc_plan_session_exists',
+      'parameter' => array(
+        'entity' => array(
+          'type' => 'entity',
+          'label' => t('Entity'),
+          'description' => t('The entity that shall be moved to ad hoc.'),
+          'wrapped' => TRUE,
+        ),
+      ),
+    ),
   );
 }
 
@@ -82,6 +95,25 @@ function deploy_adhoc_plan_manager_action_delete_from_plan($entity_wrapper) {
   $entity_type = $entity_wrapper->type();
   $entity = $entity_wrapper->value();
   deploy_manager_delete_from_plan($_SESSION['deploy_auto_plan_user_plan'], $entity_type, $entity);
+}
+
+/**
+ * Action callback for the "Move an entity to ad hoc deployment plan" action.
+ */
+function deploy_adhoc_plan_action_move_to_adhoc($dme) {
+  if (empty($_SESSION['deploy_auto_plan_user_plan']) || !deploy_manager_plan_load($_SESSION['deploy_auto_plan_user_plan'])) {
+    drupal_set_message(t('No ad hoc plan to add to.'), 'warning', FALSE);
+    return;
+  }
+
+  $label = $dme->label();
+  $dme->delete();
+  drupal_set_message(t('Entity has been removed: @label', ['@label' => $label]));
+
+  $type = $dme->entity_type->value();
+  $entity = entity_load_single($type, $dme->entity_id->value());
+  deploy_manager_add_to_plan($_SESSION['deploy_auto_plan_user_plan'], $type, entity_load_single($type, $dme->entity_id->value()));
+  drupal_set_message(t('Entity @label has been moved to the @plan plan.', array('@label' => $entity->title, '@plan' => $_SESSION['deploy_auto_plan_user_plan'])));
 }
 
 /**

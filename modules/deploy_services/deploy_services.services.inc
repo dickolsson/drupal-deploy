@@ -112,7 +112,7 @@ function deploy_services_services_resources() {
 /**
  * Services index operation callback.
  *
- * @return
+ * @return array
  *   A list of available deployment plans.
  */
 function deploy_services_index() {
@@ -131,7 +131,7 @@ function deploy_services_index() {
 /**
  * Services create operation callback.
  *
- * @param arary $data
+ * @param array $data
  *  The configuration for the plan.
  *
  * @return array
@@ -150,15 +150,14 @@ function deploy_services_create($data) {
 /**
  * Services retrieve operation callback.
  *
- * @param $name
+ * @param string $name
  *   The name of the plan to retrieve.
  *
- * @return
- *  The deployment plan object or FALSE if not found.
+ * @return object|bool
+ *   The deployment plan object or FALSE if not found.
  */
 function deploy_services_retrieve($name) {
   $plan = deploy_plan_load($name);
-
 
   if (is_object($plan)) {
     unset($plan->aggregator->plan);
@@ -173,7 +172,7 @@ function deploy_services_retrieve($name) {
  *
  * @param string $name
  *   The name of the plan to update.
- * @param arary $data
+ * @param array $data
  *  The configuration for the plan.
  *
  * @return array
@@ -240,6 +239,8 @@ function deploy_services_diff_plan($plan_name) {
  *
  * @param string $type
  *   The entity type. (Ex: node)
+ * @param int $id
+ *   The ID of entity.
  * @param int $new_revision
  *   The new revision key.
  * @param int $old_revision (optional)

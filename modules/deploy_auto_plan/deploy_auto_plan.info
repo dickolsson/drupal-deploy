@@ -2,6 +2,8 @@ name = Auto Deployment Plans
 description = "Automagically add all modified entities to a deployment plan."
 core = 7.x
 
+configure = admin/config/content/deploy-auto-plan
+
 dependencies[] = deploy
 
 files[] = deploy_auto_plan.test
