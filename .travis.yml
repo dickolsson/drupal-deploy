@@ -4,6 +4,9 @@ php:
   - 5.5
   - 5.6
 
+dist:
+  precise
+
 mysql:
   database: drupal
   username: root
@@ -33,7 +36,7 @@ install:
   - sudo service apache2 restart
 
   # Install Drush.
-  - composer global require drush/drush:7.*
+  - composer global require drush/drush:7.* -vvv
 
   # Checkout a directory structure with all dependencies.
   - git clone --depth 1 --branch 7.x http://git.drupal.org/project/drupal.git $TRAVIS_BUILD_DIR/../drupal

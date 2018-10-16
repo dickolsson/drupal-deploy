@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Remote Cache clear install functions.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function deploy_remote_cc_uninstall() {
+  variable_del('deploy_remote_cc_endpoint');
+}

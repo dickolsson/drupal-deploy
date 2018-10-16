@@ -1,0 +1,126 @@
+<?php
+
+/**
+ * @file
+ * Remote Cache clear module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_remote_cc_menu() {
+  $items = array();
+
+  $items['admin/structure/deploy/plans/list/%ctools_export_ui/cache_clear'] = array(
+    'title' => 'Clear Remote Caches',
+    'description' => 'Clears remote server caches',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_remote_cc_form', 5),
+    'access arguments' => array('clear remote caches'),
+    'weight' => 1000,
+    'file' => 'includes/deploy_remote_cc.pages.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  $items['admin/config/content/deploy_remote_cc'] = array(
+    'title' => 'Configure clear remote caches endpoints',
+    'description' => 'Configurations of clear remote caches endpoints',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_remote_cc_endpoint_settings'),
+    'file' => 'includes/deploy_remote_cc.admin.inc',
+    'access arguments' => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_services_resources().
+ */
+function deploy_remote_cc_services_resources() {
+  return array(
+    'remote_cache_clear' => array(
+      'actions' => array(
+        'cache_clear' => array(
+          'help' => 'Clears remote endpoints cache clear',
+          'callback' => '_remote_endpoint_cache_clear',
+          'args' => array(
+            array(
+              'name' => 'username',
+              'type' => 'string',
+              'description' => '',
+              'source' => array('data' => 'username'),
+              'optional' => FALSE,
+            ),
+          ),
+          'access callback' => '_remote_endpoint_cc_resource_access',
+          'access arguments' => array('view'),
+          'access arguments append' => TRUE,
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function deploy_remote_cc_permission() {
+  return array(
+    'clear remote caches' => array(
+      'title' => t('Clear remote caches'),
+    ),
+  );
+}
+
+/**
+ * Action service callback.
+ */
+function _remote_endpoint_cache_clear($user) {
+  drupal_flush_all_caches();
+  watchdog('deploy_remote_cc', 'All remote caches cleared by user %name', array('%name' => $user));
+  return TRUE;
+}
+
+/**
+ * Implements hook_deploy_authenticators().
+ */
+function deploy_remote_cc_deploy_authenticators() {
+  $path = drupal_get_path('module', 'deploy_remote_cc') . '/plugins';
+  return array(
+    'DeployRemoteCcAuthenticatorSession' => array(
+      'name' => 'Session authentication for Remote cache clear',
+      'description' => 'Performs session authentication on the remote cache clear endpoint.',
+      'handler' => array(
+        'class' => 'DeployRemoteCcAuthenticatorSession',
+        'file' => 'DeployRemoteCcAuthenticatorSession.inc',
+        'path' => $path,
+      ),
+    ),
+  );
+}
+
+/**
+ * Access callback kept same as login/logout.
+ */
+function _remote_endpoint_cc_resource_access() {
+  return TRUE;
+}
+
+/**
+ * Implements hook_deploy_services().
+ */
+function deploy_remote_cc_deploy_services() {
+  $path = drupal_get_path('module', 'deploy_remote_cc') . '/plugins';
+  return array(
+    'DeployRemoteCcServiceRestJSON' => array(
+      'name' => 'Remote cache clear using REST JSON',
+      'description' => 'Performs cache clear on remote environment over a REST service that can receive JSON data.',
+      'handler' => array(
+        'class' => 'DeployRemoteCcServiceRestJSON',
+        'file' => 'DeployRemoteCcServiceRestJSON.inc',
+        'path' => $path,
+      ),
+    ),
+  );
+}

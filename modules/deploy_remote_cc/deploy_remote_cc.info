@@ -1,0 +1,16 @@
+name = Deploy remote Cache clear
+description = Deploy remote Cache clear.
+package = Deploy
+core = 7.x
+
+; Dependencies.
+dependencies[] = deploy
+dependencies[] = deploy_ui
+dependencies[] = services
+
+; Files.
+
+files[] = plugins/DeployRemoteCcAuthenticatorSession.inc
+files[] = plugins/DeployRemoteCcServiceRestJSON.inc
+
+configure = admin/config/content/deploy_remote_cc
