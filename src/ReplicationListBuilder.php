@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
 
 /**
@@ -21,11 +22,13 @@ class ReplicationListBuilder extends EntityListBuilder {
    */
   public function buildHeader() {
     $header['replication_status'] = $this->t('Status');
-    $header['name'] = $this->t('Name');
+    $header['name'] = $this->t('Title');
     $header['source'] = $this->t('Source');
     $header['target'] = $this->t('Target');
     $header['changed'] = $this->t('Updated');
     $header['created'] = $this->t('Created');
+    $header['user'] = $this->t('User');
+    $header['description'] = $this->t('Description');
     return $header;
   }
 
@@ -39,8 +42,11 @@ class ReplicationListBuilder extends EntityListBuilder {
     $row['name'] = $entity->label();
     $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Archived</em>');
     $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Archived</em>');
+    $user = User::load($entity->uid->target_id);
     $row['changed'] = $formatter->format($entity->getChangedTime());
     $row['created'] = $formatter->format($entity->getCreatedTime());
+    $row['user'] = $user->getAccountName();
+    $row['description'] = $entity->description->value;
     return $row;
   }
 
