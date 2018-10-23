@@ -190,7 +190,7 @@ class ReplicationForm extends ContentEntityForm {
           ));
         }
         if (!$js) {
-          $form_state->setRedirect('<front>');
+          $form_state->setRedirect('entity.replication.collection');
         }
       }
       else {
@@ -216,7 +216,7 @@ class ReplicationForm extends ContentEntityForm {
   public function deploy() {
     $response = new AjaxResponse();
     $response->addCommand(new CloseModalDialogCommand());
-    $response->addCommand(new RedirectCommand(Url::fromRoute('<front>')->setAbsolute()->toString()));
+    $response->addCommand(new RedirectCommand(Url::fromRoute('entity.replication.collection')->setAbsolute()->toString()));
     return $response;
   }
 
