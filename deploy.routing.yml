@@ -19,3 +19,13 @@ entity.replication.add_form:
   options:
     _admin_route: TRUE
     no_cache: TRUE
+
+entity.replication.view_fail_info:
+  path: '/admin/structure/deployment/{replication_id}/fail-info'
+  defaults:
+    _title_callback: '\Drupal\deploy\Controller\ReplicationFailInfoController::viewTitle'
+    _controller: '\Drupal\deploy\Controller\ReplicationFailInfoController::viewFailInfo'
+  requirements:
+    _permission: 'administer deployments'
+  options:
+    _admin_route: TRUE

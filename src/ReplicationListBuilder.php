@@ -2,10 +2,13 @@
 
 namespace Drupal\deploy;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
 
@@ -38,7 +41,7 @@ class ReplicationListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $formatter = \Drupal::service('date.formatter');
     /* @var $entity \Drupal\workspace\Entity\Replication */
-    $row['replication_status'] = $this->getReplicationStatusIcon($entity->get('replication_status')->value);
+    $row['replication_status'] = $this->getReplicationStatusIcon($entity->get('replication_status')->value, $entity->id());
     $row['name'] = $entity->label();
     $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Archived</em>');
     $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Archived</em>');
@@ -89,13 +92,25 @@ class ReplicationListBuilder extends EntityListBuilder {
     return $query->execute();
   }
 
-  protected function getReplicationStatusIcon($status) {
+  protected function getReplicationStatusIcon($status, $id) {
     $icons = [
-      Replication::FAILED => $this->t('&#10006; Failed'),
       Replication::QUEUED => $this->t('&#x231A Queued'),
       Replication::REPLICATING => $this->t('In progress'),
       Replication::REPLICATED => $this->t('&#10004; Done'),
     ];
+    if ($status == Replication::FAILED) {
+      $link_url = Url::fromUserInput('/admin/structure/deployment/' . $id . '/fail-info');
+      $link_url->setOptions(array(
+          'attributes' => array(
+            'class' => array('use-ajax'),
+            'data-dialog-type' => 'modal',
+            'data-dialog-options' => Json::encode(array(
+              'width' => 700,
+            )),
+          ))
+      );
+      $icons[Replication::FAILED] = Link::fromTextAndUrl($this->t('&#10006; Failed'), $link_url);
+    }
     return $icons[$status];
   }
 
