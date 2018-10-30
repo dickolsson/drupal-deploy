@@ -7,7 +7,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\LinkGeneratorTrait;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
@@ -18,7 +17,6 @@ use Drupal\workspace\Entity\Replication;
  * @ingroup workspace
  */
 class ReplicationListBuilder extends EntityListBuilder {
-  use LinkGeneratorTrait;
 
   /**
    * {@inheritdoc}
@@ -66,7 +64,7 @@ class ReplicationListBuilder extends EntityListBuilder {
     $build = [];
     $build['#markup'] = '';
     if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
-      $message = $this->generateMessageRenderArray('warning', t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']));
+      $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']));
       $build['#markup'] .= \Drupal::service('renderer')->render($message);
     }
 
