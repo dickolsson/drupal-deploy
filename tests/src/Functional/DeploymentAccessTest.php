@@ -83,7 +83,7 @@ class DeploymentAccessTest extends BrowserTestBase {
 
     // The user should now have access to the deployment form.
     $this->drupalGet('/admin/structure/deployment/add');
-    $web_assert->pageTextContains('Deploy Stage to My Workspace');
+    $web_assert->pageTextContains('Deploy changes from local Stage workspace to My Workspace workspace');
 
     // Switch to the my_workspace workspace.
     $this->drupalPostForm('/admin/structure/workspace/3/activate', [], 'Activate');
@@ -98,7 +98,7 @@ class DeploymentAccessTest extends BrowserTestBase {
 
     // The user should now have access to the deployment form.
     $this->drupalGet('/admin/structure/deployment/add');
-    $web_assert->pageTextContains('Deploy My Workspace to Stage');
+    $web_assert->pageTextContains('Deploy changes from local My Workspace to Stage workspace');
   }
 
 }
