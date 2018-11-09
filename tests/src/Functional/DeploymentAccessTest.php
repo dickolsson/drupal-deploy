@@ -98,7 +98,7 @@ class DeploymentAccessTest extends BrowserTestBase {
 
     // The user should now have access to the deployment form.
     $this->drupalGet('/admin/structure/deployment/add');
-    $web_assert->pageTextContains('Deploy changes from local My Workspace to Stage workspace');
+    $web_assert->pageTextContains('Deploy changes from local My Workspace workspace to Stage workspace');
   }
 
 }
