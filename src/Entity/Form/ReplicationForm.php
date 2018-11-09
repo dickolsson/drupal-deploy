@@ -58,7 +58,7 @@ class ReplicationForm extends ContentEntityForm {
     }
     else {
       $target_workspace_name = $this->getDefaultTarget()->label();
-      $message = 'Deploy changes from local @source workspace to @target';
+      $message = 'Deploy changes from local @source workspace to @target workspace';
     }
     return $this->t($message, [
       '@source' => $this->getDefaultSource()->label(),

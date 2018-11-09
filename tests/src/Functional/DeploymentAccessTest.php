@@ -59,7 +59,7 @@ class DeploymentAccessTest extends BrowserTestBase {
     $web_assert->linkExists('Stage');
     $web_assert->linkByHrefExists('/admin/structure/deployment/add');
     $this->drupalGet('/admin/structure/deployment/add');
-    $web_assert->pageTextContains('Deploy Stage to Live');
+    $web_assert->pageTextContains('Deploy changes from local Stage workspace to Live workspace');
 
     // Create a new workspace.
     $this->drupalPostForm('/admin/structure/workspace/add', [
