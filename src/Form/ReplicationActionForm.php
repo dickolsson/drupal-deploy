@@ -110,7 +110,7 @@ class ReplicationActionForm extends FormBase {
       ->getAll();
     if ($conflicts) {
       $form['message'] = $this->generateMessageRenderArray('error', $this->t(
-        'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with       caution.',
+        'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with caution.',
         [
           '@count' => count($conflicts),
           ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $source_workspace->id()])->toString(),
@@ -147,6 +147,9 @@ class ReplicationActionForm extends FormBase {
     }
     elseif (!$default_target || ($target_workspace && !$target_workspace->isPublished())) {
       $message = $this->t('This deployment cannot be re-deployed because the target workspace %target has been archived.', ['%target' => $target_workspace ? '(' . $target_workspace->label() . ')' : '']);
+    }
+    elseif ($entity->getArchiveSource()) {
+      $message = $this->t('This deployment cannot be re-deployed because the source workspace %source has been marked to be archived.', ['%source' => $source_workspace ? '(' . $source_workspace->label() . ')' : '']);
     }
 
     if (isset($message)) {

@@ -114,7 +114,7 @@ class ReplicationForm extends ContentEntityForm {
       $form['archive'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Archive workspace after deployment'),
-        '#description' => $this->t('The workspace will be archived on successful deployment.'),
+        '#description' => $this->t('The workspace will be archived only if the deployment finishes with success.'),
         '#default_value' => FALSE,
       ];
     }
@@ -173,21 +173,7 @@ class ReplicationForm extends ContentEntityForm {
         drupal_set_message($this->t('Deployment queued, check the @deployments_page for the status.', ['@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')->toString()]));
 
         if ($form_state->hasValue('archive') && $form_state->getValue('archive') == TRUE) {
-          $this->entity->get('source')->entity->getWorkspace()
-            ->setUnpublished()
-            ->save();
-          /** @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager */
-          $workspace_manager = \Drupal::service('workspace.manager');
-          $default_workspace_id = \Drupal::getContainer()
-            ->getParameter('workspace.default');
-          $default_workspace = Workspace::load($default_workspace_id);
-          $workspace_manager->setActiveWorkspace($default_workspace);
-          drupal_set_message($this->t('Workspace %workspace has been archived and workspace %default has been set as active.',
-            [
-              '%workspace' => $this->getDefaultSource()->label(),
-              '%default' => $default_workspace->label(),
-            ]
-          ));
+          $this->entity->setArchiveSource()->save();
         }
         if (!$js) {
           $form_state->setRedirect('entity.replication.collection');
