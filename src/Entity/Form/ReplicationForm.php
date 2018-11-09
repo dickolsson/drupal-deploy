@@ -50,7 +50,8 @@ class ReplicationForm extends ContentEntityForm {
     }
     $target = $this->getDefaultTarget();
     $remote_name = '';
-    if (($target_workspace_name = $target->remote_database->value) && !empty($target->remote_pointer->entity)) {
+    if (!empty($target->remote_database->value) && !empty($target->remote_pointer->entity)) {
+      $target_workspace_name = $target->remote_database->value;
       $remote_name = $target->remote_pointer->entity->label();
       $target_workspace_name = ucfirst($target_workspace_name);
       $message = 'Deploy changes from local @source workspace to @target workspace on @remote';
