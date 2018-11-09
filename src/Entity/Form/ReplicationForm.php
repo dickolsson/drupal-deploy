@@ -48,9 +48,21 @@ class ReplicationForm extends ContentEntityForm {
     if (!$this->getDefaultSource() || !$this->getDefaultTarget()) {
       return $this->t('Error');
     }
-    return $this->t('Deploy @source to @target', [
+    $target = $this->getDefaultTarget();
+    $remote_name = '';
+    if (($target_workspace_name = $target->remote_database->value) && !empty($target->remote_pointer->entity)) {
+      $remote_name = $target->remote_pointer->entity->label();
+      $target_workspace_name = ucfirst($target_workspace_name);
+      $message = 'Deploy changes from local @source workspace to @target workspace on @remote';
+    }
+    else {
+      $target_workspace_name = $this->getDefaultTarget()->label();
+      $message = 'Deploy changes from local @source workspace to @target';
+    }
+    return $this->t($message, [
       '@source' => $this->getDefaultSource()->label(),
-      '@target' => $this->getDefaultTarget()->label(),
+      '@target' => $target_workspace_name,
+      '@remote' => $remote_name,
     ]);
   }
 
