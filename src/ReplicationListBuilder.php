@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
@@ -64,7 +65,14 @@ class ReplicationListBuilder extends EntityListBuilder {
     $build = [];
     $build['#markup'] = '';
     if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
-      $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed now, see the <a href="@url">Status page</a> for more information about the last replication status.', ['@url' => '/admin/reports/status']));
+      $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Contact somebody who has access to Status report page to unblock creating new content deployments.'));
+      $user_has_access = \Drupal::currentUser()->hasPermission('administer site configuration');
+      if ($user_has_access) {
+        $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Please see the <a href="@url">Status report</a> page for more information about the last replication status.', ['@url' => '/admin/reports/status']));
+      }
+      elseif ($support_email = Settings::get('support_email_address', NULL)) {
+        $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Please contact the <a href="mailto:@url">support team</a> to unblock creating new content deployments.', ['@url' => $support_email]));
+      }
       $build['#markup'] .= \Drupal::service('renderer')->render($message);
     }
 
