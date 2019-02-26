@@ -183,7 +183,7 @@ class ReplicationForm extends ContentEntityForm {
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
-        drupal_set_message($this->t('Deployment queued, check the @deployments_page for the status.', ['@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')->toString()]));
+        drupal_set_message($this->t('Deployment queued, refresh this page and check the status below. It might take a few minutes to complete.'));
 
         if ($form_state->hasValue('archive') && $form_state->getValue('archive') == TRUE) {
           $this->entity->setArchiveSource()->save();
