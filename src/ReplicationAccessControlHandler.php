@@ -92,11 +92,6 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
       return AccessResult::forbidden('Replication is blocked.');
     }
 
-    // Load just the ID and workspace separately to allow for remote workspace
-    // pointers which won't have the workspace_pointer field set.
-    $upstream_workspace_id = $upstream_workspace_pointer->get('remote_database')->value;
-    $upstream_workspace = Workspace::load($upstream_workspace_id);
-
     $replication_in_queue = $this->entityTypeManager
       ->getStorage('replication')
       ->getQuery()
@@ -119,6 +114,10 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
       return AccessResult::allowed();
     }
 
+    // Load just the ID and workspace separately to allow for remote workspace
+    // pointers which won't have the workspace_pointer field set.
+    $upstream_workspace_id = $upstream_workspace_pointer->workspace_pointer->target_id;
+    $upstream_workspace = Workspace::load($upstream_workspace_id);
     // When the upstream workspace is set, the owner matches the account, and
     // the user has the correct permission then allow access.
     if ($upstream_workspace && $upstream_workspace->getOwnerId() == $account->id() && $account->hasPermission('deploy to own workspace')) {
