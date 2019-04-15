@@ -101,7 +101,10 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
       ->execute();
     if (!empty($replication_in_queue)) {
       $this->messenger()
-        ->addWarning(t('A deployment from the active workspace is currently queued or in progress. Creating a new deployment is not allowed until the current one ends. Check @deployments_page for the status.', [
+        ->addWarning(t('Users are allowed to create only one push and ' .
+          'one pull (update) deployment. New deployments are allowed only ' .
+          'after the current queued deployments end (after cron run). Check ' .
+          '@deployments_page for the status.', [
           '@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')
             ->toString()
         ]));
