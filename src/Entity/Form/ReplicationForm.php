@@ -4,14 +4,11 @@ namespace Drupal\deploy\Entity\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\Workspace;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\WorkspacePointerInterface;
@@ -94,7 +91,7 @@ class ReplicationForm extends ContentEntityForm {
       if ($js) {
         return ['#markup' => $message];
       }
-      drupal_set_message($message, 'error');
+      $this->messenger()->addError($message);
       return [];
     }
 
@@ -190,7 +187,7 @@ class ReplicationForm extends ContentEntityForm {
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
         $this->entity->set('replicated', REQUEST_TIME)->save();
-        drupal_set_message($this->t('Deployment queued, refresh this page and check the status below. It might take a few minutes to complete.'));
+        $this->messenger()->addMessage($this->t('Deployment queued, refresh this page and check the status below. It might take a few minutes to complete.'));
 
         if ($form_state->hasValue('archive') && $form_state->getValue('archive') == TRUE) {
           $this->entity->setArchiveSource()->save();
@@ -200,12 +197,12 @@ class ReplicationForm extends ContentEntityForm {
         }
       }
       else {
-        drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
+        $this->messenger()->addError('Deployment error. Check recent log messages for more details.', 'error');
       }
     }
     catch (\Exception $e) {
       watchdog_exception('Deploy', $e);
-      drupal_set_message($e->getMessage(), 'error');
+      $this->messenger()->addError($e->getMessage(), 'error');
     }
 
     if (!$js) {

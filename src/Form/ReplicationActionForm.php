@@ -8,7 +8,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
@@ -195,10 +194,10 @@ class ReplicationActionForm extends FormBase {
       );
     if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
       $entity->set('replicated', REQUEST_TIME)->save();
-      drupal_set_message('Successful deployment.');
+      $this->messenger()->addMessage('Successful deployment.');
     }
     else {
-      drupal_set_message('Deployment error. Check recent log messages for more details.', 'error');
+      $this->messenger()->addError('Deployment error. Check recent log messages for more details.');
     }
   }
 
