@@ -4,6 +4,7 @@ namespace Drupal\deploy\Entity\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
@@ -136,6 +137,17 @@ class ReplicationForm extends ContentEntityForm {
       ];
     }
 
+    $form['doc_ids'] = [
+      '#type' => 'hidden',
+      '#attributes' => [
+        'autocomplete' => 'off',
+        'class' => [
+          'field-doc-ids',
+        ],
+        'id' => 'field-doc-ids',
+      ],
+    ];
+
     $form['source']['widget']['#default_value'] = [$default_source->id()];
 
     if (empty($this->entity->get('target')->target_id) && $default_target) {
@@ -173,6 +185,11 @@ class ReplicationForm extends ContentEntityForm {
     drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
     parent::save($form, $form_state);
+
+    if (!empty($form_state->getUserInput()['doc_ids'])) {
+      $doc_ids = $form_state->getUserInput()['doc_ids'];
+      $this->entity->setDocIds($doc_ids);
+    }
 
     $input = $form_state->getUserInput();
     $js = isset($input['_drupal_ajax']) ? TRUE : FALSE;
