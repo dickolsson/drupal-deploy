@@ -42,8 +42,8 @@ class ReplicationListBuilder extends EntityListBuilder {
     /* @var $entity \Drupal\workspace\Entity\Replication */
     $row['replication_status'] = $this->getReplicationStatusIcon($entity->get('replication_status')->value, $entity->id());
     $row['name'] = $entity->label();
-    $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Archived</em>');
-    $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Archived</em>');
+    $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Unknown</em>');
+    $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Unknown</em>');
     $user = User::load($entity->uid->target_id);
     $row['changed'] = $formatter->format($entity->getChangedTime());
     $row['created'] = $formatter->format($entity->getCreatedTime());

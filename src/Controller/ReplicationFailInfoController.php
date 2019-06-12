@@ -20,9 +20,16 @@ class ReplicationFailInfoController extends ControllerBase {
   public function viewFailInfo($replication_id) {
     /** @var \Drupal\workspace\Entity\Replication $entity */
     $entity = \Drupal::entityTypeManager()->getStorage('replication')->load($replication_id);
+    $source = $target = $this->t('*' . 'Unknown' . '*');
+    if (!empty($entity->source->entity)) {
+      $source = $entity->source->entity->label();
+    }
+    if (!empty($entity->target->entity)) {
+      $target = $entity->target->entity->label();
+    }
     $arguments = [
-      '%source' => $entity->source->entity->label(),
-      '%target' => $entity->target->entity->label(),
+      '%source' => $source,
+      '%target' => $target,
     ];
     if (!empty($entity->replicated->value)) {
       $arguments['%timestamp'] = DrupalDateTime::createFromTimestamp($entity->replicated->value)->format('Y/m/d H:i:s e');
