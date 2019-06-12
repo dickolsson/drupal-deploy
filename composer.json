@@ -12,6 +12,6 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "relaxedws/replicator": "~1.1.0"
+    "relaxedws/replicator": "~1"
   }
 }
