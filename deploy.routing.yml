@@ -29,3 +29,13 @@ entity.replication.view_fail_info:
     _permission: 'administer deployments'
   options:
     _admin_route: TRUE
+
+entity.replication.view_requeue_info:
+  path: '/admin/structure/deployment/{replication_id}/requeue-info'
+  defaults:
+    _title_callback: '\Drupal\deploy\Controller\ReplicationRequeueInfoController::viewTitle'
+    _controller: '\Drupal\deploy\Controller\ReplicationRequeueInfoController::viewRequeueInfo'
+  requirements:
+    _permission: 'administer deployments'
+  options:
+    _admin_route: TRUE

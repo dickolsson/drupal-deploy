@@ -3,9 +3,12 @@
 namespace Drupal\deploy\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class ReplicationFailInfoController extends ControllerBase {
+class ReplicationRequeueInfoController extends ControllerBase {
 
   /**
    * Title callback.
@@ -17,7 +20,7 @@ class ReplicationFailInfoController extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function viewFailInfo($replication_id) {
+  public function viewRequeueInfo($replication_id) {
     /** @var \Drupal\workspace\Entity\Replication $entity */
     $entity = $this->entityTypeManager()->getStorage('replication')->load($replication_id);
     $source = $target = $this->t('*' . 'Unknown' . '*');
@@ -31,13 +34,7 @@ class ReplicationFailInfoController extends ControllerBase {
       '%source' => $source,
       '%target' => $target,
     ];
-    if (!empty($entity->replicated->value)) {
-      $arguments['%timestamp'] = DrupalDateTime::createFromTimestamp($entity->replicated->value)->format('Y/m/d H:i:s e');
-    }
-    else {
-      $arguments['%timestamp'] = $this->t('unknown date');
-    }
-    $build['#markup'] = $this->t('Deployment failed when replicating content from %source to %target on %timestamp.', $arguments);
+    $build['#markup'] = $this->t('Deployment from %source to %target has been requeued.', $arguments);
     $build['#markup'] .= "</br></br>";
     if (!empty($entity->getReplicationFailInfo())) {
       $build['#markup'] .= $this->t('<strong>Reason: </strong>') . $entity->getReplicationFailInfo();
@@ -60,7 +57,7 @@ class ReplicationFailInfoController extends ControllerBase {
    */
   public function viewTitle($replication_id) {
     $entity = $this->entityTypeManager()->getStorage('replication')->load($replication_id);
-    return 'Deployment "' . $entity->label() . '" failed';
+    return 'Deployment "' . $entity->label() . '" has been requeued';
   }
 
 }

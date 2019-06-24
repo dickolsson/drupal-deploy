@@ -99,12 +99,13 @@ class ReplicationListBuilder extends EntityListBuilder {
   }
 
   protected function getReplicationStatusIcon($status, $id) {
+    $status = (int) $status;
     $icons = [
       Replication::QUEUED => $this->t('&#x231A Queued'),
       Replication::REPLICATING => $this->t('In progress'),
       Replication::REPLICATED => $this->t('&#10004; Done'),
     ];
-    if ($status == Replication::FAILED) {
+    if ($status === Replication::FAILED) {
       $link_url = Url::fromUserInput('/admin/structure/deployment/' . $id . '/fail-info');
       $link_url->setOptions(array(
           'attributes' => array(
@@ -116,6 +117,21 @@ class ReplicationListBuilder extends EntityListBuilder {
           ))
       );
       $icons[Replication::FAILED] = Link::fromTextAndUrl($this->t('&#10006; Failed'), $link_url);
+    }
+    /** @var Replication $entity */
+    $entity = $this->getStorage()->load($id);
+    if ($status === Replication::QUEUED && !empty($entity->getReplicationFailInfo())) {
+      $link_url = Url::fromUserInput('/admin/structure/deployment/' . $id . '/requeue-info');
+      $link_url->setOptions(array(
+          'attributes' => array(
+            'class' => array('use-ajax'),
+            'data-dialog-type' => 'modal',
+            'data-dialog-options' => Json::encode(array(
+              'width' => 700,
+            )),
+          ))
+      );
+      $icons[Replication::QUEUED] = Link::fromTextAndUrl($this->t('&#x231A Queued'), $link_url);
     }
     return $icons[$status];
   }
