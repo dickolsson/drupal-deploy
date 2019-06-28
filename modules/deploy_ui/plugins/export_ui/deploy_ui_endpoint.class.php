@@ -1,8 +1,10 @@
 <?php
+
 /**
  * @file
  * CTools export UI implementation for deploy endpoints.
  */
+
 // @ignore style_class_names:file
 
 /**
@@ -16,7 +18,7 @@ class deploy_ui_endpoint extends ctools_export_ui {
    * @todo
    *   Can we do this in $plugin instead?
    */
-  function hook_menu(&$items) {
+  public function hook_menu(&$items) {
     parent::hook_menu($items);
     $items['admin/structure/deploy/endpoints']['type'] = MENU_LOCAL_TASK;
   }
@@ -24,7 +26,7 @@ class deploy_ui_endpoint extends ctools_export_ui {
   /**
    * Form callback for basic config.
    */
-  function edit_form(&$form, &$form_state) {
+  public function edit_form(&$form, &$form_state) {
     $item = $form_state['item'];
 
     // Basics.
@@ -104,7 +106,7 @@ class deploy_ui_endpoint extends ctools_export_ui {
   /**
    * Submit callback for basic config.
    */
-  function edit_form_submit(&$form, &$form_state) {
+  public function edit_form_submit(&$form, &$form_state) {
     $item = $form_state['item'];
 
     $item->name = $form_state['values']['name'];
@@ -118,14 +120,14 @@ class deploy_ui_endpoint extends ctools_export_ui {
   /**
    * Form for editing authentication configuration.
    */
-  function edit_form_authenticator(&$form, &$form_state) {
+  public function edit_form_authenticator(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!is_array($item->authenticator_config)) {
       $item->authenticator_config = unserialize($item->authenticator_config);
     }
-    $service = new $item->service_plugin((array)$item->service_config);
+    $service = new $item->service_plugin((array) $item->service_config);
     // Create the authenticator object.
-    $authenticator = new $item->authenticator_plugin($service, (array)$item->authenticator_config);
+    $authenticator = new $item->authenticator_plugin($service, (array) $item->authenticator_config);
 
     $form['authenticator_config'] = $authenticator->configForm($form_state);
     if (!empty($form['authenticator_config'])) {
@@ -142,25 +144,35 @@ class deploy_ui_endpoint extends ctools_export_ui {
   /**
    * Authenticator form submit handler.
    */
-  function edit_form_authenticator_submit(&$form, &$form_state) {
+  public function edit_form_authenticator_submit(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!empty($form_state['values']['authenticator_config'])) {
       $item->authenticator_config = $form_state['values']['authenticator_config'];
+      $encrypt['username'] = _deploy_encrypt($form_state['values']['authenticator_config']['username']);
+      $encrypt['password'] = _deploy_encrypt($form_state['values']['authenticator_config']['password']);
+      $item->authenticator_config = $encrypt;
     }
     else {
       $item->authenticator_config = array();
+    }
+
+    if (module_exists('encrypt')) {
+      // Removing default php encryption state.
+      if (_deploy_get_php_encryption_state()) {
+        variable_del('deploy_php_encryption_state');
+      }
     }
   }
 
   /**
    * Service edit form.
    */
-  function edit_form_service(&$form, &$form_state) {
+  public function edit_form_service(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!is_array($item->service_config)) {
       $item->service_config = unserialize($item->service_config);
     }
-    $service = new $item->service_plugin((array)$item->service_config);
+    $service = new $item->service_plugin((array) $item->service_config);
 
     $form['service_config'] = $service->configForm($form_state);
     if (!empty($form['service_config'])) {
@@ -177,7 +189,7 @@ class deploy_ui_endpoint extends ctools_export_ui {
   /**
    * Submit handler for service edit form.
    */
-  function edit_form_service_submit(&$form, &$form_state) {
+  public function edit_form_service_submit(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!empty($form_state['values']['service_config'])) {
       $item->service_config = $form_state['values']['service_config'];

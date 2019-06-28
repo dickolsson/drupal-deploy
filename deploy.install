@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Deploy module installation functions.
@@ -399,4 +400,28 @@ function deploy_update_7003(&$sandbox) {
 
   db_drop_primary_key('deploy_manager_entities');
   db_add_field($table, 'dme_id', $spec, $new_keys);
+}
+
+/**
+ * Encrypt existing endpoints username & password.
+ */
+function deploy_update_7004() {
+  if (_deploy_encrypt_endpoints()) {
+    return t("All Endpoints username & password encrypted successfully.");
+  }
+  return t("Updated skipped: This update only applies when using the Encrypt module.");
+}
+
+/**
+ * Implements hook_install().
+ */
+function deploy_install() {
+  _deploy_encrypt_endpoints();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function deploy_uninstall() {
+  variable_del('deploy_encryption_state');
 }

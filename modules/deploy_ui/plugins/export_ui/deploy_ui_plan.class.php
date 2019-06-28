@@ -1,19 +1,20 @@
 <?php
+
 /**
  * @file
  * Deploy UI for managing deployment plans.
  */
+
 // @ignore style_class_names:file
 
 /**
  * CTools Export UI class for deployment plans.
  */
 class deploy_ui_plan extends ctools_export_ui {
-
   /**
    * Implements CTools psuedo hook_menu_alter().
    */
-  function hook_menu(&$items) {
+  public function hook_menu(&$items) {
     parent::hook_menu($items);
 
     // Hack around some of the limitations of the CTools Exportable UI default implementation.
@@ -37,8 +38,8 @@ class deploy_ui_plan extends ctools_export_ui {
     $items['admin/structure/deploy/plans/list/%ctools_export_ui/view']['type'] = MENU_DEFAULT_LOCAL_TASK;
 
     /*
-      We need to sort the menu items to ensure the parent exists before the
-      children are added. Without the menu is broken.
+    We need to sort the menu items to ensure the parent exists before the
+    children are added. Without the menu is broken.
      */
     ksort($items);
 
@@ -47,14 +48,14 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * {@inheritdoc}
    */
-  function access($op, $item) {
+  public function access($op, $item) {
     return deploy_access($op);
   }
 
   /**
    * Form callback for basic config.
    */
-  function edit_form(&$form, &$form_state) {
+  public function edit_form(&$form, &$form_state) {
     $item = $form_state['item'];
 
     // Basics.
@@ -129,7 +130,7 @@ class deploy_ui_plan extends ctools_export_ui {
       '#states' => array(
         'invisible' => array(
           ':input[name="fetch_only"]' => array('checked' => TRUE),
-        )
+        ),
       ),
     );
 
@@ -179,7 +180,7 @@ class deploy_ui_plan extends ctools_export_ui {
         'description' => t('Description'),
       ),
       '#options' => $options,
-      '#default_value' => (array)$item->endpoints,
+      '#default_value' => (array) $item->endpoints,
     );
 
     // Dependency plugin.
@@ -203,7 +204,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Submit callback for basic config.
    */
-  function edit_form_submit(&$form, &$form_state) {
+  public function edit_form_submit(&$form, &$form_state) {
     $item = $form_state['item'];
 
     $item->name = $form_state['values']['name'];
@@ -236,14 +237,14 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Form form configuring the aggegator.
    */
-  function edit_form_aggregator(&$form, &$form_state) {
+  public function edit_form_aggregator(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!is_array($item->aggregator_config)) {
       $item->aggregator_config = unserialize($item->aggregator_config);
     }
 
     // Create the aggregator object.
-    $aggregator = new $item->aggregator_plugin(NULL, (array)$item->aggregator_config);
+    $aggregator = new $item->aggregator_plugin(NULL, (array) $item->aggregator_config);
 
     $form['aggregator_config'] = $aggregator->configForm($form_state);
     if (!empty($form['aggregator_config'])) {
@@ -252,7 +253,7 @@ class deploy_ui_plan extends ctools_export_ui {
     else {
       $form['empty'] = array(
         '#type' => 'markup',
-        '#markup' => '<p>' . t('There are no settings for this aggregator plugin.') . '</p>'
+        '#markup' => '<p>' . t('There are no settings for this aggregator plugin.') . '</p>',
       );
     }
   }
@@ -260,7 +261,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Submit handler for the aggregator configuration form.
    */
-  function edit_form_aggregator_submit(&$form, &$form_state) {
+  public function edit_form_aggregator_submit(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!empty($form_state['values']['aggregator_config'])) {
       $item->aggregator_config = $form_state['values']['aggregator_config'];
@@ -273,7 +274,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Processor configuration form.
    */
-  function edit_form_processor(&$form, &$form_state) {
+  public function edit_form_processor(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!empty($item->processor_plugin)) {
       if (!is_array($item->processor_config)) {
@@ -281,9 +282,9 @@ class deploy_ui_plan extends ctools_export_ui {
       }
 
       // Create the aggregator object which is a dependency of the processor object.
-      $aggregator = new $item->aggregator_plugin(NULL, (array)$item->aggregator_config);
+      $aggregator = new $item->aggregator_plugin(NULL, (array) $item->aggregator_config);
       // Create the processor object.
-      $processor = new $item->processor_plugin($aggregator, (array)$item->processor_config);
+      $processor = new $item->processor_plugin($aggregator, (array) $item->processor_config);
 
       $form['processor_config'] = $processor->configForm($form_state);
       if (!empty($form['processor_config'])) {
@@ -293,7 +294,7 @@ class deploy_ui_plan extends ctools_export_ui {
     if (empty($item->processor_plugin) || empty($form['processor_config'])) {
       $form['empty'] = array(
         '#type' => 'markup',
-        '#markup' => '<p>' . t("No processor plugin is selected, or the selected processor plugin doesn't have any settings.") . '</p>'
+        '#markup' => '<p>' . t("No processor plugin is selected, or the selected processor plugin doesn't have any settings.") . '</p>',
       );
     }
   }
@@ -301,7 +302,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Submit handler for the processor configuration form.
    */
-  function edit_form_processor_submit(&$form, &$form_state) {
+  public function edit_form_processor_submit(&$form, &$form_state) {
     $item = $form_state['item'];
     if (!empty($form_state['values']['processor_config'])) {
       $item->processor_config = $form_state['values']['processor_config'];
@@ -314,7 +315,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Renders the view deployment plan page.
    */
-  function view_page($js, $input, $plan) {
+  public function view_page($js, $input, $plan) {
     drupal_set_title(t('Plan: @plan', array('@plan' => $plan->name)), PASS_THROUGH);
 
     $status = deploy_plan_get_status($plan->name);
@@ -372,7 +373,7 @@ class deploy_ui_plan extends ctools_export_ui {
   /**
    * Renders the deployment plan page.
    */
-  function deploy_page($js, $input, $plan) {
+  public function deploy_page($js, $input, $plan) {
     $form_state = array(
       'plugin' => $this->plugin,
       'object' => &$this,
@@ -396,6 +397,7 @@ class deploy_ui_plan extends ctools_export_ui {
 
     return $output;
   }
+  
 }
 
 /**

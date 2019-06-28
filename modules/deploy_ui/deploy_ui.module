@@ -1,5 +1,9 @@
 <?php
 
+ /**
+  * @file Deploy Admin UI
+  */
+
 /**
  * Implementation of hook_menu().
  */
@@ -42,10 +46,10 @@ function deploy_ui_menu() {
  * @param object $account
  *   The account to check, if not given use currently logged in user.
  *
- * @return boolean
+ * @return bool
  *   Boolean TRUE if the current user has the requested permission.
  */
-function deploy_ui_user_access($string, $account=NULL, $deny_for_post=TRUE) {
+function deploy_ui_user_access($string, $account = NULL, $deny_for_post = TRUE) {
 
   if (!user_access($string, $account)) {
     return FALSE;

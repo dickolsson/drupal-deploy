@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Deploy module functions.
@@ -102,7 +103,7 @@ function deploy_entity_info() {
       'access callback' => 'deploy_access',
       'label callback' => 'deploy_manager_entities_label',
       'views controller class' => 'DeployManagerEntityViewsController',
-    ]
+    ],
   ];
 
   // We can only use entity cache if it is enabled.
@@ -293,7 +294,7 @@ function deploy_access($op, $entity = NULL, $account = NULL) {
  * Object factory for a deployment plan.
  */
 function deploy_plan_create($schema, $item) {
-  $plan = new DeployPlan;
+  $plan = new DeployPlan();
   // Unserialize our serialized params.
   foreach ($schema['fields'] as $field => $info) {
     if (!empty($info['serialize'])) {
@@ -312,7 +313,7 @@ function deploy_plan_create($schema, $item) {
 function deploy_plan_load($name) {
   $plans = deploy_plan_load_all();
   if (isset($plans[$name])) {
-     drupal_alter("deploy_plan_load", $plans[$name]);
+    drupal_alter("deploy_plan_load", $plans[$name]);
     return $plans[$name];
   }
   return FALSE;
@@ -388,7 +389,7 @@ function deploy_plan_get_status($name) {
  * Object factory for a deployment endpoint.
  */
 function deploy_endpoint_create($schema, $item) {
-  $endpoint = new DeployEndpoint;
+  $endpoint = new DeployEndpoint();
   // Unserialize our serialized params.
   foreach ($schema['fields'] as $field => $info) {
     if (!empty($info['serialize'])) {
@@ -612,7 +613,7 @@ function deploy_status_info($status = NULL, $key = NULL) {
  * @param mixed $key
  *   Can be either an existing key (UUID) or a string of a plan name indicating
  *   that a new deployment is started and a key needs to be generated.
- * @param integer $status
+ * @param int $status
  *   Status code.
  * @param string $message
  *   A message to log.
@@ -705,17 +706,17 @@ function deploy_is_latest_revision($entity_type, $entity) {
  *
  * @param string $entity_type
  *   The machine name of the entity type.
- * @param integer $entity_id
+ * @param int $entity_id
  *   The id for the entity.
  * @param string $exclude
  *   The machine of a plan to exclude from the look up. Ignored if NULL.
- * @param integer $revision_id
+ * @param int $revision_id
  *   The revision id to use for the lookup. All revisions are used if NULL.
  *
  * @return array
  *   List of plans the entity was found in.
  */
-function deploy_find_entity($entity_type, $entity_id, $exclude=NULL, $revision_id=NULL) {
+function deploy_find_entity($entity_type, $entity_id, $exclude = NULL, $revision_id = NULL) {
   $query = db_select('deploy_manager_entities', 'dme')
     ->fields('dme', ['plan_name'])
     ->condition('entity_type', $entity_type)
@@ -791,4 +792,102 @@ function deploy_plan_entity_label($type, $entity, $rev = NULL) {
   }
 
   return $full_label;
+}
+
+/**
+ * Helper function to encrypt existing endpoints username & password.
+ *
+ * @return bool
+ */
+function _deploy_encrypt_endpoints() {
+  foreach (deploy_endpoint_load_all() as $key => $value) {
+    $endpoint = deploy_endpoint_load($key);
+    if (!empty($endpoint->authenticator_config['username']) && !empty($endpoint->authenticator_config['password'])) {
+      $endpoint->authenticator_config['username'] = _deploy_encrypt($endpoint->authenticator_config['username']);
+      $endpoint->authenticator_config['password'] = _deploy_encrypt($endpoint->authenticator_config['password']);
+      ctools_export_crud_save('deploy_endpoints', $endpoint);
+    }
+
+    if (module_exists('encrypt')) {
+      // Remove default php encryption state.
+      if (_deploy_get_php_encryption_state()) {
+        variable_set('deploy_php_encryption_state', FALSE);
+      }
+    }
+  }
+  return TRUE;
+}
+
+/**
+ * Centralize method for handling encryption.
+ *
+ * @param $value
+ *   string which needs to be encrypt
+ */
+function _deploy_encrypt($value) {
+  if (module_exists('encrypt')) {
+    if (_deploy_get_php_encryption_state()) {
+      $original_value = base64_decode($value);
+      return encrypt($original_value);
+    }
+    return encrypt($value);
+  }
+  elseif (variable_get('encrypt_module_enabled', FALSE)) {
+    // Encrypt module was enabled, but not anymore.
+    drupal_set_message('Your endpoints are broken');
+    return;
+  }
+  // Encrypt was never enabled.
+  _deploy_set_php_encryption_state();
+  return base64_encode($value);
+}
+
+/**
+ * Centralize method for handling decryption.
+ *
+ * @param $value
+ *   string needs to be decrypt
+ */
+function _deploy_decrypt($value) {
+  if (module_exists('encrypt')) {
+    return decrypt($value);
+  }
+  elseif (variable_get('encrypt_module_enabled', FALSE)) {
+    // Encrypt module was enabled, but not anymore.
+    drupal_set_message('Your endpoints are broken');
+    return;
+  }
+  // Encrypt was never enabled.
+  return base64_decode($value);
+}
+
+/**
+ * Implements hook_modules_enabled().
+ */
+function deploy_modules_enabled($modules) {
+  if (in_array('encrypt', $modules)) {
+    _deploy_encrypt_endpoints();
+    // There is no easy way to know that the Encrypt module was enabled
+    // and now disabled/uninstalled. Set variable to track the module status.
+    variable_set('encrypt_module_enabled', TRUE);
+  }
+}
+
+/**
+ * Set default php encryption state.
+ */
+function _deploy_set_php_encryption_state() {
+  if (!variable_get('deploy_php_encryption_state', FALSE)) {
+    variable_set('deploy_php_encryption_state', TRUE);
+  }
+}
+
+/**
+ * Get default php encryption state.
+ */
+function _deploy_get_php_encryption_state() {
+  if (variable_get('deploy_php_encryption_state')) {
+    return TRUE;
+  }
+  return FALSE;
 }

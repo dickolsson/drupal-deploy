@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Session based authentication plugin.
@@ -19,13 +20,17 @@ class DeployAuthenticatorSession implements DeployAuthenticator {
   /**
    * {@inheritdoc}
    */
-  public function __construct(DeployService $service, Array $config = array()) {
+  public function __construct(DeployService $service, array $config = array()) {
     $this->service = $service;
     $this->config += array(
       'debug' => FALSE,
       'username' => '',
       'password' => '',
     );
+    if (!empty($config['username']) && !empty($config['password'])) {
+      $config['username'] = _deploy_decrypt($config['username']);
+      $config['password'] = _deploy_decrypt($config['password']);
+    }
     $this->config = array_merge($this->config, $config);
   }
 
