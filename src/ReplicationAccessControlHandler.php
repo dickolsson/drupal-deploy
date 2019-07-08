@@ -15,6 +15,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -95,17 +96,18 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
     $replication_in_queue = $this->entityTypeManager
       ->getStorage('replication')
       ->getQuery()
-      ->condition('source', $active_workspace->id())
+      ->condition('source', WorkspacePointer::loadFromWorkspace($active_workspace)->id())
       ->condition('target', $upstream_workspace_pointer->id())
       ->condition('replication_status', [Replication::QUEUED, Replication::REPLICATING], 'IN')
       ->execute();
     if (!empty($replication_in_queue)) {
       $this->messenger()
         ->addWarning(t('Users are allowed to create only one push and ' .
-          'one pull (update) deployment. New deployments are allowed only ' .
-          'after the current queued deployments end (after cron run). Check ' .
-          '@deployments_page for the status.', [
-          '@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')
+          'one pull (update) deployment between the same source and target ' .
+          'workspaces. New deployments are allowed only after the current ' .
+          'queued deployments end (after cron run). Check ' .
+          '@deployments_page page for the status.', [
+          '@deployments_page' => Link::createFromRoute('Deployments', 'entity.replication.collection')
             ->toString()
         ]));
       return AccessResult::forbidden('Replication queued or in progress.');
