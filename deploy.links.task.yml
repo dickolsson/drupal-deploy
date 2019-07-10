@@ -3,11 +3,6 @@ entity.replication.collection:
   base_route: entity.replication.collection
   title: 'Deployments'
 
-entity.replication.canonical:
-  route_name: entity.replication.canonical
-  base_route: entity.replication.canonical
-  title: 'View'
-
 entity.replication.delete_form:
   route_name:  entity.replication.delete_form
   base_route:  entity.replication.canonical

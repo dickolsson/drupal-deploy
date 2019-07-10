@@ -17,7 +17,7 @@ class ReplicationDeleteForm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete %name?', ['%name' => $this->entity->label()]);
+    return $this->t('Are you sure you want to delete the deployment %name?', ['%name' => $this->entity->label()]);
   }
 
   /**
@@ -41,10 +41,9 @@ class ReplicationDeleteForm extends ContentEntityConfirmFormBase {
     $this->entity->delete();
 
     $this->messenger()->addMessage(
-      $this->t('@type: deleted @label.',
+      $this->t('Deployment %label has been deleted.',
         [
-          '@type' => $this->entity->bundle(),
-          '@label' => $this->entity->label(),
+          '%label' => $this->entity->label(),
         ]
       )
     );

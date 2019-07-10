@@ -31,6 +31,7 @@ class ReplicationListBuilder extends EntityListBuilder {
     $header['created'] = $this->t('Created');
     $header['user'] = $this->t('User');
     $header['description'] = $this->t('Description');
+    $header['operations'] = $this->t('Operations');
     return $header;
   }
 
@@ -40,7 +41,7 @@ class ReplicationListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $formatter = \Drupal::service('date.formatter');
     /* @var $entity \Drupal\workspace\Entity\Replication */
-    $row['replication_status'] = $this->getReplicationStatusIcon($entity->get('replication_status')->value, $entity->id());
+    $row['replication_status'] = $this->getReplicationStatusIcon($entity->getReplicationStatus(), $entity->id());
     $row['name'] = $entity->label();
     $row['source'] = $entity->get('source')->entity ? $entity->get('source')->entity->label() : $this->t('<em>Unknown</em>');
     $row['target'] = $entity->get('target')->entity ? $entity->get('target')->entity->label() : $this->t('<em>Unknown</em>');
@@ -49,6 +50,21 @@ class ReplicationListBuilder extends EntityListBuilder {
     $row['created'] = $formatter->format($entity->getCreatedTime());
     $row['user'] = $user->getAccountName();
     $row['description'] = $entity->description->value;
+    // Set operations.
+    $links = [];
+    if ($entity->hasLinkTemplate('delete-form')
+      && in_array($entity->getReplicationStatus(), [Replication::REPLICATED, Replication::FAILED])) {
+      $links['delete'] = [
+        'title' => t('Delete'),
+        'url' => $entity->toUrl('delete-form', ['absolute' => TRUE]),
+      ];
+    }
+    $row[] = [
+      'data' => [
+        '#type' => 'operations',
+        '#links' => $links,
+      ],
+    ];
     return $row;
   }
 
