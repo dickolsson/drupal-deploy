@@ -65,10 +65,10 @@ class ReplicationListBuilder extends EntityListBuilder {
     $build = [];
     $build['#markup'] = '';
     if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
-      $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Contact somebody who has access to Status report page to unblock creating new content deployments.'));
+      $message = $this->generateMessageRenderArray('warning', $this->t('Creation of new deployments has been blocked due to a failure. Contact your administrator to get the issue resolved and deployments unblocked.'));
       $user_has_access = \Drupal::currentUser()->hasPermission('administer site configuration');
       if ($user_has_access) {
-        $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Please see the <a href="@url">Status report</a> page for more information about the last replication status.', ['@url' => '/admin/reports/status']));
+        $message = $this->generateMessageRenderArray('warning', $this->t('Creation of new deployments has been blocked due to a failure. After resolving the issue, go to the <a href="@url">replication settings</a> page to unblock deployments.', ['@url' => '/admin/config/replication/settings']));
       }
       elseif ($support_email = Settings::get('support_email_address', NULL)) {
         $message = $this->generateMessageRenderArray('warning', $this->t('Creating new deployments is not allowed at the moment. Please contact the <a href="mailto:@url">support team</a> to unblock creating new content deployments.', ['@url' => $support_email]));
