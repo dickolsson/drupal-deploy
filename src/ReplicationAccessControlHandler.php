@@ -6,17 +6,24 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * ReplicationAccessControlHandler class.
  */
 class ReplicationAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
+
+  use MessengerTrait;
 
   /**
    * The workspace manager service.
@@ -26,6 +33,13 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
   protected $workspaceManager;
 
   /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a NodeAccessControlHandler object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -33,9 +47,10 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
    */
-  public function __construct(EntityTypeInterface $entity_type, WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(EntityTypeInterface $entity_type, WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type);
     $this->workspaceManager = $workspace_manager;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -44,7 +59,8 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('workspace.manager')
+      $container->get('workspace.manager'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -75,6 +91,18 @@ class ReplicationAccessControlHandler extends EntityAccessControlHandler impleme
 
     if (\Drupal::state()->get('workspace.last_replication_failed', FALSE)) {
       return AccessResult::forbidden('Replication is blocked.');
+    }
+
+    $replication_in_queue = $this->entityTypeManager
+      ->getStorage('replication')
+      ->getQuery()
+      ->condition('source', WorkspacePointer::loadFromWorkspace($active_workspace)->id())
+      ->condition('target', $upstream_workspace_pointer->id())
+      ->condition('replication_status', [Replication::QUEUED, Replication::REPLICATING], 'IN')
+      ->execute();
+    if (!empty($replication_in_queue)) {
+      $this->messenger()->addWarning(t('Users are only allowed to create one push and one pull deployment between the same source and target workspace. New deployments are only allowed after the currently queued deployment finish.'));
+      return AccessResult::forbidden('Replication queued or in progress.');
     }
 
     // The 'deploy to any workspace' permission will always allow the user to
