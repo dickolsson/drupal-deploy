@@ -11,6 +11,12 @@ env:
   - MAKE_FILE=drupal-8.7.x.make.yml
   - MAKE_FILE=drupal-8.8.x.make.yml
 
+matrix:
+  allow_failures:
+    # This should fail because of https://www.drupal.org/project/multiversion/issues/3090566.
+    - env: MAKE_FILE=drupal-8.8.x.make.yml
+  fast_finish: true
+
 services:
   - mysql
 
