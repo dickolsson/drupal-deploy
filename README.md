@@ -26,7 +26,7 @@ can be easily extended to be used in a variety of content staging situations.
 
 Deploy has been re-designed for Drupal 8 and is based on the Multiversion an
 Replication modules. This creates a very flexible and efficient content staging
-framework for Drupal 8! See the below presentation for more details:
+framework for Drupal 8 See the below presentation for more details:
 
  * DrupalCon Dublin 2016 - https://www.youtube.com/watch?v=tgmypdEOEVs
 
